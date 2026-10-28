@@ -110,6 +110,7 @@ def diagnose(repo: Repo, omens: list[Omen], name: str, model: str | None = None,
     return Ritual(
         repo=name,
         url=repo.url,
+        commit=(repo.git("rev-parse", "HEAD") or "").strip() or None,
         model=model or llm.current_model(),
         performed_at=datetime.now(UTC).isoformat(timespec="seconds"),
         omens=omens,
