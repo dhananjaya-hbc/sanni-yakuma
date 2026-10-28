@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sanni Yakuma · {{ r.repo }}</title>
+<meta name="description" content="An exorcism for the code of {{ r.repo }}, after the Sanni Yakuma healing ritual of southern Sri Lanka.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night: #0d0907; --wood: #1c130e; --ember: #e2711d; --gold: #e0a526; --red: #b3261e;
+  --leaf: #3f7d3a; --cream: #efe3cc; --dim: #a8987f; --line: #3a2a1f;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sinhala: "Noto Sans Sinhala", "Sinhala Sangam MN", "Iskoola Pota", sans-serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--night); }
+body {
+  margin: 0; color: var(--cream); font: 18px/1.65 var(--serif);
+  background: radial-gradient(ellipse at 50% 0%, #2a1a10 0%, var(--night) 55%) fixed;
+}
+/* Torch light from both sides of the stage. */
+body::before, body::after {
+  content: ""; position: fixed; top: -10vh; width: 60vw; height: min(80vh, 800px); pointer-events: none; z-index: 0;
+  background: radial-gradient(circle, rgba(226,113,29,.20) 0%, rgba(226,113,29,0) 65%);
+  animation: flicker 3.7s infinite;
+}
+body::before { left: -25vw; }
+body::after { right: -25vw; animation-duration: 4.3s; animation-delay: -1.2s; }
+@keyframes flicker {
+  0%, 100% { opacity: .85; } 12% { opacity: 1; } 20% { opacity: .7; } 34% { opacity: .95; }
+  52% { opacity: .78; } 68% { opacity: 1; } 81% { opacity: .82; }
+}
+main, header, footer { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 22px; }
+a { color: var(--gold); }
+code { font: .86em var(--mono); background: #2a1d15; padding: .1em .35em; border-radius: 4px; color: #f6d79a; }
+h1, h2, h3, h4 { font-weight: normal; line-height: 1.2; }
+.kicker { font-variant: small-caps; letter-spacing: .14em; color: var(--ember); font-size: .95rem; margin: 0; }
+
+/* Opening */
+header.stage { text-align: center; padding-top: clamp(48px, 12vh, 140px); padding-bottom: clamp(24px, 6vh, 70px); }
+header.stage h1 { font-size: clamp(2.2rem, 6vw, 4rem); margin: .3em 0 .2em; word-break: break-word; }
+header.stage .lede { font-size: 1.15rem; color: var(--dim); max-width: 36em; margin: 0 auto 1.5em; }
+.meta { font-size: .9rem; color: var(--dim); }
+.meta span + span::before { content: " · "; }
+.tally { margin-top: 2.2em; font-size: 1.1rem; }
+.tally strong { color: var(--gold); font-weight: normal; font-size: 1.6rem; }
+
+section { padding: clamp(40px, 9vh, 110px) 0 clamp(20px, 4vh, 50px); }
+section > h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin: .2em 0 .4em; }
+section > .intro { color: var(--dim); max-width: 40em; }
+
+/* Ata Paliya: blessings as oil lamps */
+.lamps { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+.lamp { background: var(--wood); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px 18px; }
+.lamp svg { width: 54px; height: 54px; display: block; }
+.lamp .flame { fill: #4a3626; transition: fill 1.2s, filter 1.2s; }
+.lamp.lit .flame, .no-js .lamp .flame { fill: var(--gold); filter: drop-shadow(0 0 8px var(--ember)); }
+.lamp h3 { font-size: 1.1rem; margin: .4em 0 .2em; color: var(--gold); }
+.lamp p { margin: 0; font-size: .95rem; color: var(--cream); }
+
+/* Daha Ata Sanniya: the demons */
+.demon { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; padding: clamp(32px, 7vh, 90px) 0; border-top: 1px solid var(--line); }
+.demon .body { min-width: 0; }
+.demon .mask svg { width: 100%; height: auto; filter: drop-shadow(0 10px 24px rgba(226,113,29,.25)); }
+.demon h3 { font-size: 2rem; margin: 0; }
+.demon .illness { color: var(--dim); margin: .2em 0 .6em; }
+.flames { display: flex; gap: 4px; align-items: center; margin-bottom: 1em; font-size: .9rem; color: var(--dim); }
+.flames svg { width: 16px; height: 21px; fill: var(--ember); }
+.flames svg.off { fill: #3a2a1f; }
+.flames span { margin-left: 8px; font-variant: small-caps; letter-spacing: .08em; }
+blockquote.monologue {
+  margin: 0 0 1.2em; padding: .2em 0 .2em 1em; border-left: 3px solid var(--red);
+  font-style: italic; font-size: 1.12rem;
+}
+details { margin: 0 0 1.2em; }
+summary { cursor: pointer; color: var(--gold); }
+.evidence { list-style: none; padding: 0; margin: .6em 0 0; font-size: .92rem; }
+.evidence li { padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.evidence .eid { color: var(--dim); font: .8em var(--mono); margin-right: .5em; }
+.evidence .note { color: var(--dim); }
+.exorcism { background: #13261a; border: 1px solid #2d4a33; border-radius: 10px; padding: 14px 18px; }
+.exorcism h4 { margin: 0 0 .3em; color: #9fd39a; font-variant: small-caps; letter-spacing: .1em; font-size: 1rem; }
+.exorcism p { margin: 0 0 .5em; }
+.exorcism ol { margin: 0 0 .5em; padding-left: 1.3em; }
+pre.diff { margin: .8em 0 0; padding: 12px; overflow-x: auto; background: #0b0f0b; border-radius: 6px; font: 13px/1.5 var(--mono); }
+pre.diff .add { color: #8fdc8a; } pre.diff .del { color: #ef8a80; }
+pre.diff .hunk { color: #7aa6d6; } pre.diff .file { color: var(--dim); } pre.diff .ctx { color: #c9bda8; }
+pre.diff span { display: block; white-space: pre; }
+.none { color: var(--dim); font-style: italic; }
+
+/* The spared */
+.spared { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; list-style: none; padding: 0; }
+.spared li { display: flex; gap: 10px; align-items: center; font-size: .88rem; color: var(--dim); }
+.spared svg { width: 56px; flex: none; opacity: .75; }
+.spared strong { color: var(--cream); font-weight: normal; display: block; }
+
+/* Kola Sanniya */
+#kola { text-align: center; }
+#kola .mask svg { width: min(360px, 80vw); height: auto; filter: drop-shadow(0 12px 40px rgba(179,38,30,.45)); }
+#kola .root { font-size: 1.35rem; max-width: 30em; margin: .6em auto; color: var(--gold); }
+#kola .explanation { max-width: 36em; margin: 0 auto; color: var(--cream); }
+.verse { margin: 3em auto 0; max-width: 34em; padding: 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.verse .si { font: 1.5rem/1.8 var(--sinhala); margin: 0; white-space: pre-line; }
+.verse .tr { color: var(--dim); font-style: italic; margin: .8em 0 .3em; white-space: pre-line; }
+.verse .en { margin: 0; white-space: pre-line; }
+
+footer { padding: clamp(40px, 8vh, 100px) 22px clamp(50px, 10vh, 120px); color: var(--dim); font-size: .92rem; border-top: 1px solid var(--line); margin-top: 6vh; }
+footer h2 { color: var(--cream); font-size: 1.3rem; }
+footer ul { padding-left: 1.2em; }
+
+/* Demons walk on as you scroll (only when JS runs). */
+.js .reveal { opacity: 0; transform: translateY(40px); transition: opacity 1s ease, transform 1s ease; }
+.js .reveal.seen { opacity: 1; transform: none; }
+
+@media (max-width: 680px) {
+  .demon { grid-template-columns: 1fr; gap: 12px; }
+  .demon .mask svg { width: 170px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+  .lamp .flame { transition: none; }
+}
+</style>
+</head>
+<body class="no-js">
+<script>document.body.classList.remove("no-js"); document.documentElement.classList.add("js");</script>
+
+<header class="stage">
+  <p class="kicker">Sanni Yakuma · an exorcism for code</p>
+  <h1>{{ r.repo }}</h1>
+  <p class="lede">
+    In the healing ritual of southern Sri Lanka, masked dancers call out the eighteen Sanni demons,
+    each the cause of an illness, mock them, and send them away. Tonight the patient is a codebase.
+  </p>
+  <p class="meta">
+    {% if repo_url %}<span><a href="{{ repo_url }}">{{ repo_url | replace("https://", "") }}</a></span>{% endif %}
+    {% if short_commit %}<span>commit <code>{{ short_commit }}</code></span>{% endif %}
+    <span>{{ date }}</span>
+    <span>diagnosed by {{ r.model }}</span>
+  </p>
+  <p class="tally">
+    <strong>{{ r.blessings | length }}</strong> blessings ·
+    <strong>{{ demons | length }}</strong> of 18 demons found ·
+    <strong>{{ clean | length }}</strong> never came near
+  </p>
+</header>
+
+<main>
+  <section id="ata-paliya">
+    <p class="kicker">Ata Paliya</p>
+    <h2>First, the blessings</h2>
+    <p class="intro">
+      The ritual does not begin with demons. It begins with dances that bring blessings.
+      So here is what this repository already does well.
+    </p>
+    {% if r.blessings %}
+    <ul class="lamps">
+      {% for b in r.blessings %}
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>{{ b.title }}</h3>
+        <p>{{ b.detail | ticks }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="none">No blessings were spoken.</p>
+    {% endif %}
+  </section>
+
+  <section id="daha-ata-sanniya">
+    <p class="kicker">Daha Ata Sanniya</p>
+    <h2>The demons come out</h2>
+    <p class="intro">
+      One by one, each demon steps into the torchlight, boasts of what it has done, is mocked,
+      and agrees to leave. Every claim below rests on evidence found in the code itself.
+    </p>
+
+    {% for d in demons %}
+    <article class="demon reveal" id="{{ d.p.demon | lower | replace(' ', '-') }}">
+      <div class="mask">{{ d.mask }}</div>
+      <div class="body">
+        <h3>{{ d.p.demon }} Sanniya</h3>
+        <p class="illness">brings {{ d.info.illness }} · in code: <em>{{ d.info.sickness }}</em></p>
+        <div class="flames" aria-label="severity {{ d.p.severity }} of 3">
+          {% for i in range(3) %}
+          <svg viewBox="0 0 20 26" class="{{ '' if i < d.p.severity else 'off' }}" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          {% endfor %}
+          <span>{{ d.severity }}</span>
+        </div>
+        <blockquote class="monologue">{{ d.p.monologue | ticks }}</blockquote>
+
+        {% if d.evidence %}
+        <details>
+          <summary>The evidence ({{ d.evidence | length }})</summary>
+          <ul class="evidence">
+            {% for eid, ev, url in d.evidence %}
+            <li>
+              <span class="eid">{{ eid }}</span>
+              {% if ev.path %}
+                {% if url %}<a href="{{ url }}"><code>{{ ev.path }}{% if ev.line %}:{{ ev.line }}{% endif %}</code></a>
+                {% else %}<code>{{ ev.path }}{% if ev.line %}:{{ ev.line }}{% endif %}</code>{% endif %}
+              {% endif %}
+              {% if ev.snippet %}<code>{{ ev.snippet }}</code>{% endif %}
+              {% if ev.note %}<span class="note">{{ ev.note }}</span>{% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endif %}
+
+        <div class="exorcism">
+          <h4>The exorcism</h4>
+          <p>{{ d.p.exorcism.summary | ticks }}</p>
+          <ol>
+            {% for step in d.p.exorcism.steps %}<li>{{ step | ticks }}</li>{% endfor %}
+          </ol>
+          {% if d.diff %}
+          <pre class="diff">{% for kind, line in d.diff %}<span class="{{ kind }}">{{ line }}</span>{% endfor %}</pre>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+    {% else %}
+    <p class="none">No demon could be proven. The patient is well.</p>
+    {% endfor %}
+  </section>
+
+  {% if spared %}
+  <section id="spared">
+    <p class="kicker">Questioned and sent away</p>
+    <h2>The spared</h2>
+    <p class="intro">The detectors suspected these demons, but after questioning the evidence was too weak to name them.</p>
+    <ul class="spared">
+      {% for s in spared %}
+      <li>{{ s.mask }}<div><strong>{{ s.name }}</strong>{{ s.summary }}</div></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section id="kola" class="reveal">
+    <p class="kicker">Kola Sanniya</p>
+    <div class="mask">{{ kola_mask }}</div>
+    <h2>The leader of the demons</h2>
+    <p class="root">{{ r.kola_sanniya.root_cause | ticks }}</p>
+    <p class="explanation">{{ r.kola_sanniya.explanation | ticks }}</p>
+    <div class="verse">
+      <p class="si" lang="si">{{ r.kola_sanniya.verse_sinhala }}</p>
+      <p class="tr">{{ r.kola_sanniya.verse_transliteration }}</p>
+      <p class="en">{{ r.kola_sanniya.verse_english }}</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <h2>About the ritual</h2>
+  <p>
+    Sanni Yakuma is a traditional healing ritual of southern Sri Lanka, part of the low-country
+    dance tradition. Masked dancers portray the eighteen Sanni demons, each believed to cause a
+    particular illness. The demons are called out one by one, questioned, mocked and persuaded to
+    leave the patient. The leader of the demons is Kola Sanniya. The ritual is rarely performed in
+    full today, but its masks and dances are still part of Sri Lankan culture.
+  </p>
+  <p>
+    This page borrows the ritual's shape, not its sacred purpose. The humour is aimed at the code
+    sicknesses, as the ritual itself mocks the demons, never at the tradition or the people who keep it.
+    Read more: <a href="https://en.wikipedia.org/wiki/Sanni_Yakuma">Sanni Yakuma on Wikipedia</a>.
+  </p>
+
+  <h2>How this exorcism was performed</h2>
+  <ul>
+    <li>Eighteen plain detectors read the code (no AI) and collected evidence: files, lines, numbers.</li>
+    <li>{{ r.model }}, an open Gemma model, read that evidence and wrote the diagnosis, the monologues and the cures.</li>
+    <li>Any demon or evidence Gemma named that the detectors had not found was thrown out. Code fixes are shown only if their lines really exist in the code.</li>
+    {% if r.rejected %}<li>Thrown out this time: {{ r.rejected | join("; ") }}.</li>{% endif %}
+    <li>The masks are original drawings made in code for this project, not copies of real masks.</li>
+  </ul>
+  <p>Made with <a href="https://github.com/dhananjaya-hbc/sanni-yakuma">sanni-yakuma</a>, performed {{ date }}.</p>
+</footer>
+
+<script>
+(function () {
+  var items = document.querySelectorAll(".reveal");
+  if (!("IntersectionObserver" in window)) {
+    items.forEach(function (el) { el.classList.add("seen", "lit"); });
+    return;
+  }
+  var lampIndex = 0;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var el = e.target;
+      el.classList.add("seen");
+      if (el.classList.contains("lamp")) {
+        // Light the lamps one after another, as in the opening dances.
+        setTimeout(function () { el.classList.add("lit"); }, 250 + 300 * (lampIndex++ % 8));
+      }
+      io.unobserve(el);
+    });
+  }, { threshold: 0.15 });
+  items.forEach(function (el) { io.observe(el); });
+})();
+</script>
+</body>
+</html>
