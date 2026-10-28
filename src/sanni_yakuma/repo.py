@@ -1,0 +1,122 @@
+"""Read-only view of a cloned repository, shared by all detectors."""
+
+import subprocess
+from dataclasses import dataclass, field
+from functools import cached_property
+from pathlib import Path
+
+MAX_TEXT_BYTES = 1_000_000
+
+SOURCE_EXTS = {
+    ".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".go", ".java", ".kt",
+    ".rb", ".php", ".rs", ".c", ".h", ".cc", ".cpp", ".hpp", ".cs", ".swift",
+    ".scala", ".dart", ".lua", ".sh", ".vue", ".svelte",
+}
+
+# Directories that hold third-party or generated code, not the author's own.
+VENDOR_DIRS = {
+    "node_modules", "vendor", "third_party", "dist", "build", ".venv", "venv",
+    "site-packages", "__pycache__", ".git",
+}
+
+
+def is_test_path(path: str) -> bool:
+    p = Path(path)
+    name = p.name.lower()
+    parts = {part.lower() for part in p.parts[:-1]}
+    if parts & {"test", "tests", "__tests__", "spec", "specs", "testing"}:
+        return True
+    stem = name.split(".")[0]
+    return (
+        stem.startswith("test_")
+        or stem.endswith("_test")
+        or stem.endswith("_spec")
+        or ".test." in name
+        or ".spec." in name
+        or (p.suffix in {".java", ".kt", ".cs"} and stem.endswith("test"))
+    )
+
+
+@dataclass
+class Repo:
+    root: Path
+    url: str | None = None
+    # Optional GitHub metadata (archived, open issues, ...). Filled by summon.
+    meta: dict = field(default_factory=dict)
+
+    def git(self, *args: str) -> str | None:
+        """Output of a git command, or None if it fails (e.g. not a git repo)."""
+        result = subprocess.run(
+            ["git", "-C", str(self.root), *args],
+            capture_output=True, text=True, check=False,
+        )
+        return result.stdout if result.returncode == 0 else None
+
+    @cached_property
+    def files(self) -> list[str]:
+        """Files git would commit (tracked + untracked, minus ignored), relative to root.
+
+        Falls back to a walk for folders that are not git repos, skipping
+        vendored folders since nothing there was ever "committed".
+        """
+        out = self.git("ls-files", "-z", "--cached", "--others", "--exclude-standard")
+        if out is not None:
+            return sorted({f for f in out.split("\0") if f and (self.root / f).is_file()})
+        return sorted(
+            str(p.relative_to(self.root))
+            for p in self.root.rglob("*")
+            if p.is_file() and not self.is_vendored(str(p.relative_to(self.root)))
+        )
+
+    @cached_property
+    def source_files(self) -> list[str]:
+        """The author's own source code: no vendored, generated or test files."""
+        return [
+            f for f in self.files
+            if Path(f).suffix.lower() in SOURCE_EXTS
+            and not self.is_vendored(f)
+            and not is_test_path(f)
+        ]
+
+    @cached_property
+    def test_files(self) -> list[str]:
+        return [
+            f for f in self.files
+            if Path(f).suffix.lower() in SOURCE_EXTS
+            and not self.is_vendored(f)
+            and is_test_path(f)
+        ]
+
+    @staticmethod
+    def is_vendored(path: str) -> bool:
+        parts = Path(path).parts
+        return any(part in VENDOR_DIRS for part in parts) or path.endswith(".min.js")
+
+    def exists(self, path: str) -> bool:
+        return (self.root / path).exists()
+
+    def size(self, path: str) -> int:
+        try:
+            return (self.root / path).stat().st_size
+        except OSError:
+            return 0
+
+    def is_binary(self, path: str) -> bool:
+        try:
+            with open(self.root / path, "rb") as fh:
+                return b"\0" in fh.read(8192)
+        except OSError:
+            return False
+
+    def read_text(self, path: str) -> str | None:
+        """File contents, or None for binaries, huge files and unreadable paths."""
+        if self.size(path) > MAX_TEXT_BYTES or self.is_binary(path):
+            return None
+        try:
+            return (self.root / path).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            return None
+
+    def lines(self, path: str) -> list[str]:
+        text = self.read_text(path)
+        return text.splitlines() if text is not None else []
