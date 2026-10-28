@@ -1,4 +1,4 @@
-"""Command line: `sanni omens`, `sanni exorcise` and `sanni ping`."""
+"""Command line: `sanni omens`, `sanni exorcise`, `sanni render` and `sanni ping`."""
 
 import argparse
 import json
@@ -12,8 +12,10 @@ from rich.table import Table
 
 from . import __version__
 from .detectors import read_omens
+from .diagnosis import Ritual
 from .exorcise import DiagnosisError, diagnose
 from .llm import LLMError, generate
+from .render import write_page
 from .summon import parse_github, summon
 
 console = Console()
@@ -97,7 +99,18 @@ def cmd_exorcise(args: argparse.Namespace) -> int:
     console.print(f"\n[bold]Kola Sanniya[/]: {k.root_cause}", highlight=False)
     console.print(k.explanation, highlight=False)
     console.print(f"\n{k.verse_sinhala}\n[dim]{k.verse_transliteration}[/]\n[italic]{k.verse_english}[/]", highlight=False)
-    console.print(f"\nSaved {out}")
+    page = write_page(ritual, out.with_suffix(".html"))
+    console.print(f"\nSaved {out} and {page}")
+    return 0
+
+
+def cmd_render(args: argparse.Namespace) -> int:
+    """Re-render pages from saved rituals, without asking Gemma again."""
+    for name in args.rituals:
+        source = Path(name)
+        ritual = Ritual.model_validate_json(source.read_text(encoding="utf-8"))
+        page = write_page(ritual, source.with_suffix(".html"))
+        console.print(f"Rendered {page}")
     return 0
 
 
@@ -126,8 +139,12 @@ def main(argv: list[str] | None = None) -> int:
     exorcise = sub.add_parser("exorcise", help="perform the ritual: omens, then Gemma's diagnosis and cure")
     exorcise.add_argument("target", help="GitHub URL or local folder")
     exorcise.add_argument("--model", help="override MODEL_NAME, e.g. gemma-4-31b-it")
-    exorcise.add_argument("--out", default="out", help="folder for the ritual JSON (default: out)")
+    exorcise.add_argument("--out", default="out", help="folder for the ritual JSON and page (default: out)")
     exorcise.set_defaults(func=cmd_exorcise)
+
+    render = sub.add_parser("render", help="re-render ritual pages from saved JSON (no AI)")
+    render.add_argument("rituals", nargs="+", help="out/<repo>.json files")
+    render.set_defaults(func=cmd_render)
 
     ping = sub.add_parser("ping", help="check that Gemma answers")
     ping.add_argument("--model", help="override MODEL_NAME")
