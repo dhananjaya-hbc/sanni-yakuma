@@ -90,7 +90,7 @@ class Repo:
     @staticmethod
     def is_vendored(path: str) -> bool:
         parts = Path(path).parts
-        return any(part in VENDOR_DIRS for part in parts) or path.endswith(".min.js")
+        return any(part in VENDOR_DIRS for part in parts) or path.endswith((".min.js", "-min.js", ".min.css"))
 
     def exists(self, path: str) -> bool:
         return (self.root / path).exists()
