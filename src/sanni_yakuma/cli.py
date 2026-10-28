@@ -1,9 +1,10 @@
-"""Command line: `sanni omens <repo>` and `sanni ping`."""
+"""Command line: `sanni omens`, `sanni exorcise` and `sanni ping`."""
 
 import argparse
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 from rich.console import Console
@@ -11,8 +12,9 @@ from rich.table import Table
 
 from . import __version__
 from .detectors import read_omens
+from .exorcise import DiagnosisError, diagnose
 from .llm import LLMError, generate
-from .summon import summon
+from .summon import parse_github, summon
 
 console = Console()
 SEVERITY = {0: "[dim]absent[/]", 1: "[yellow]mild[/]", 2: "[orange1]clear[/]", 3: "[bold red]severe[/]"}
@@ -52,6 +54,53 @@ def cmd_omens(args: argparse.Namespace) -> int:
     return 0
 
 
+def repo_name(target: str) -> str:
+    if gh := parse_github(target):
+        return f"{gh[0]}/{gh[1]}"
+    return Path(target).expanduser().resolve().name
+
+
+def cmd_exorcise(args: argparse.Namespace) -> int:
+    name = repo_name(args.target)
+    try:
+        with summon(args.target) as repo:
+            with console.status(f"Reading the omens of {name} ..."):
+                omens = read_omens(repo)
+            with console.status(f"Gemma is diagnosing {name} ..."):
+                ritual = diagnose(repo, omens, name, model=args.model)
+    except subprocess.CalledProcessError as exc:
+        console.print(f"[red]Could not clone {args.target}:[/] {exc.stderr.strip()}")
+        return 1
+    except (LLMError, DiagnosisError) as exc:
+        console.print(f"[red]{exc}[/]")
+        return 1
+
+    out = Path(args.out) / f"{name.replace('/', '-')}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(ritual.model_dump_json(indent=2), encoding="utf-8")
+
+    console.print(f"\n[bold]Ata Paliya[/]: {len(ritual.blessings)} blessings")
+    for b in ritual.blessings:
+        console.print(f"  ✦ {b.title}", highlight=False)
+    console.print(f"\n[bold]Daha Ata Sanniya[/]: {len(ritual.possessions)} demons possess {name}")
+    for p in ritual.possessions:
+        console.print(f"\n  {p.demon} {SEVERITY[p.severity]}", highlight=False)
+        console.print(f"  [italic]{p.monologue}[/]", highlight=False)
+        console.print(f"  Exorcism: {p.exorcism.summary}", highlight=False)
+        if p.exorcism.diff:
+            console.print(p.exorcism.diff, markup=False, highlight=False)
+    if ritual.spared:
+        console.print(f"\n[dim]Spared after questioning: {', '.join(ritual.spared)}[/]")
+    if ritual.rejected:
+        console.print(f"[dim]Thrown out: {'; '.join(ritual.rejected)}[/]")
+    k = ritual.kola_sanniya
+    console.print(f"\n[bold]Kola Sanniya[/]: {k.root_cause}", highlight=False)
+    console.print(k.explanation, highlight=False)
+    console.print(f"\n{k.verse_sinhala}\n[dim]{k.verse_transliteration}[/]\n[italic]{k.verse_english}[/]", highlight=False)
+    console.print(f"\nSaved {out}")
+    return 0
+
+
 def cmd_ping(args: argparse.Namespace) -> int:
     try:
         reply = generate("Reply with exactly one short sentence: are you awake?", model=args.model)
@@ -73,6 +122,12 @@ def main(argv: list[str] | None = None) -> int:
     omens.add_argument("--json", action="store_true", help="print raw JSON")
     omens.add_argument("--limit", type=int, default=5, help="evidence lines per demon")
     omens.set_defaults(func=cmd_omens)
+
+    exorcise = sub.add_parser("exorcise", help="perform the ritual: omens, then Gemma's diagnosis and cure")
+    exorcise.add_argument("target", help="GitHub URL or local folder")
+    exorcise.add_argument("--model", help="override MODEL_NAME, e.g. gemma-4-31b-it")
+    exorcise.add_argument("--out", default="out", help="folder for the ritual JSON (default: out)")
+    exorcise.set_defaults(func=cmd_exorcise)
 
     ping = sub.add_parser("ping", help="check that Gemma answers")
     ping.add_argument("--model", help="override MODEL_NAME")
