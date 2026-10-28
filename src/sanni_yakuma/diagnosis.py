@@ -55,6 +55,8 @@ class Ritual(BaseModel):
 
     repo: str
     url: str | None
+    # The exact commit examined, so evidence links never drift.
+    commit: str | None = None
     model: str
     performed_at: str
     omens: list[Omen]
