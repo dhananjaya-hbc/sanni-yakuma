@@ -1,0 +1,17 @@
+# secrets
+.env
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# output
+out/
+
+# local notes
+CLAUDE.md
+
+# os
+.DS_Store
