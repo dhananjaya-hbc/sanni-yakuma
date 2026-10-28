@@ -1,12 +1,14 @@
 from datetime import UTC, datetime
 
-from sanni_yakuma.detectors import amukku, bihiri, golu, gulma, jala, kana, kora, pith, read_omens, slesma
+from sanni_yakuma.detectors import (abutha, amukku, bihiri, butha, deva, gedi, gini_jala, golu, gulma, jala, kana,
+                                    kora, maru, naga, pissu, pith, read_omens, slesma, vatha)
 
 LONG_README = "# Demo\n\n" + "word " * 200
 HEALTHY = {
     "README.md": LONG_README,
     "LICENSE": "MIT License",
     ".gitignore": ".env\n",
+    "ruff.toml": "line-length = 100\n",
     ".github/workflows/ci.yml": "on: push",
     "app/core.py": 'def add(a, b):\n    """Add."""\n    return a + b\n',
     "tests/test_core.py": "def test_add():\n    assert True\n",
@@ -116,3 +118,144 @@ def test_slesma_node_modules_and_env(make_repo):
 
 def test_slesma_no_gitignore(make_repo):
     assert slesma.detect(make_repo({"a.py": ""})).severity_hint == 1
+
+
+# Abutha: self-made complexity
+def test_abutha_tangled_function(make_repo):
+    branches = "".join(f"    if x == {i}:\n        y += {i}\n" for i in range(20))
+    nested = "def deep(a):\n    if a:\n        for b in a:\n            while b:\n                if b > 1:\n                    return b\n"
+    omen = abutha.detect(make_repo({"a.py": "def tangled(x):\n    y = 0\n" + branches + "    return y\n\n" + nested}))
+    # Two bad functions are found but stay below the "mild" threshold of three.
+    assert omen.metrics["possessed"] == 2 and not omen.found
+
+
+def test_abutha_ignores_multiline_calls(make_repo):
+    code = "def f(x):\n    for a in x:\n        g(\n            a,\n                b,\n                    c,\n        )\n"
+    assert abutha.detect(make_repo({"a.py": code})).metrics["possessed"] == 0
+
+
+# Butha: dependency hell
+def test_butha_no_lockfile_and_wildcards(make_repo):
+    pkg = '{"dependencies": {"a": "*", "b": "latest", "c": "^1.0.0", "d": "*"}}'
+    assert butha.detect(make_repo({"package.json": pkg})).severity_hint == 3
+
+
+def test_butha_locked_is_fine(make_repo):
+    repo = make_repo({"package.json": '{"dependencies": {"c": "^1.0.0"}}', "package-lock.json": "{}"})
+    assert not butha.detect(repo).found
+
+
+def test_butha_bare_requirements(make_repo):
+    omen = butha.detect(make_repo({"requirements.txt": "flask\nrequests>=2\nnumpy==1.26\n"}))
+    assert omen.metrics["unpinned"] == 1 and omen.severity_hint == 1
+
+
+def test_butha_python_library_ranges_are_fine(make_repo):
+    pyproject = '[project]\nname = "lib"\ndependencies = ["requests>=2", "rich>=13,<16"]\n'
+    assert not butha.detect(make_repo({"pyproject.toml": pyproject})).found
+
+
+# Deva: copy-paste
+def test_deva_finds_clone_across_files(make_repo):
+    block = "".join(f"    total_{i} = compute_something(value_{i}, factor={i}) + offset\n" for i in range(8))
+    filler = "".join(f"    unique_{n}_{i} = other_call({n}, {i}) - shift\n" for i in range(40) for n in [0])
+    files = {f"m{n}.py": f"def f{n}():\n" + block + filler.replace("unique_0", f"unique_{n}") for n in range(3)}
+    omen = deva.detect(make_repo(files))
+    assert omen.metrics["clone_groups"] == 1
+
+
+# Gedi: style
+def test_gedi_no_config(make_repo):
+    assert gedi.detect(make_repo({"a.py": "x = 1\n"})).severity_hint == 2
+
+
+def test_gedi_standard_dev_dependency(make_repo):
+    assert not gedi.detect(make_repo({"a.js": "", "package.json": '{"devDependencies": {"standard": "^17"}}'})).found
+
+
+def test_gedi_pyproject_ruff(make_repo):
+    assert not gedi.detect(make_repo({"a.py": "", "pyproject.toml": "[tool.ruff]\nline-length = 90\n"})).found
+
+
+# Gini Jala: hotfix fever
+def test_gini_jala_fever(make_repo):
+    repo = make_repo({"a.py": ""})
+    env = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t",
+           "PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin"}
+    import subprocess
+    for i in range(30):
+        msg = "hotfix: oops, fix again" if i % 3 else "add feature"
+        subprocess.run(["git", "-C", str(repo.root), "commit", "-q", "--allow-empty", "-m", msg], check=True, env=env)
+    omen = gini_jala.detect(repo)
+    assert omen.severity_hint >= 2 and omen.metrics["fix_commits"] == 20
+
+
+def test_gini_jala_needs_enough_commits(make_repo):
+    assert not gini_jala.detect(make_repo({"a.py": ""})).found
+
+
+# Maru: dead code
+def test_maru_commented_code(make_repo):
+    dead = "".join(f"# value_{i} = compute({i})\n" for i in range(8))
+    prose = "# This module explains the ritual in plain words\n" * 8
+    omen = maru.detect(make_repo({"a.py": "x = 1\n" + dead + "y = 2\n" + prose}))
+    assert omen.metrics["blocks"] == 1 and omen.metrics["dead_lines"] == 8
+
+
+# Naga: secrets
+def test_naga_masks_known_key(make_repo):
+    key = "AKIA" + "ABCDEFGHIJKLMNOP"
+    omen = naga.detect(make_repo({"config.py": f'AWS_KEY = "{key}"\n'}))
+    assert omen.severity_hint == 3
+    assert key not in omen.model_dump_json() and "AKIA********OP" in omen.evidence[0].snippet
+
+
+def test_naga_generic_and_placeholders(make_repo):
+    code = 'password = "Zx9!qL2#vR7p"\napi_key = "your-api-key-here"\ntoken = os.environ["T"]\n'
+    omen = naga.detect(make_repo({"a.py": code}))
+    assert omen.metrics["suspected_secrets"] == 1 and "Zx9!qL2#vR7p" not in omen.model_dump_json()
+
+
+def test_naga_skips_test_fixtures_and_docs(make_repo):
+    omen = naga.detect(make_repo({
+        "tests/ssl/server.key": "-----BEGIN RSA PRIVATE KEY-----\nabc\n",
+        "README.md": "headers = {'token': 'Qw8rT5yU2iO9'}\n",
+        "aws.py": 'k = "AKIAIOSFODNN7EXAMPLE"\n',
+    }))
+    assert not omen.found
+
+
+def test_naga_committed_env(make_repo):
+    omen = naga.detect(make_repo({".env": "X=1", ".env.example": "X="}))
+    assert omen.metrics["known_secrets"] == 1
+
+
+# Pissu: magic madness
+def test_pissu_paths_and_hosts(make_repo):
+    code = 'DATA = "/Users/kamal/data.csv"\nurl = "http://localhost:8080/api"\nother = "http://127.0.0.1:5000"\n'
+    omen = pissu.detect(make_repo({"a.py": code}))
+    assert omen.metrics["hardcoded_paths"] == 1 and omen.metrics["local_hosts"] == 2 and omen.found
+
+
+def test_pissu_magic_numbers_skip_constants(make_repo):
+    assert pissu.magic_numbers("    price = cost * 1.0725 + 37") == ["1.0725", "37"]
+    assert pissu.magic_numbers("TAX_RATE = 1.0725") == []
+    assert pissu.magic_numbers('    name = "room 42"') == []
+
+
+# Vatha: dependency bloat
+def test_vatha_bloat_and_trivial(make_repo):
+    deps = ", ".join(f'"pkg{i}": "1.0.0"' for i in range(40))
+    repo = make_repo({"package.json": '{"dependencies": {' + deps + ', "is-odd": "3.0.1"}}', "index.js": "x()\n" * 100})
+    omen = vatha.detect(repo)
+    assert omen.severity_hint == 3 and omen.metrics["trivial_packages"] == 1
+
+
+def test_deva_ignores_generated_bundles(make_repo):
+    modules = {
+        f"modules/m{n}.js": "".join(f"export const value_{n}_{i} = compute_thing({n}, {i}) + offset;\n" for i in range(30))
+        for n in range(6)
+    }
+    bundle = "".join(modules.values())
+    omen = deva.detect(make_repo({**modules, "bundle.js": bundle}))
+    assert omen.metrics["generated_copies"] == 1 and omen.metrics["clone_groups"] == 0
