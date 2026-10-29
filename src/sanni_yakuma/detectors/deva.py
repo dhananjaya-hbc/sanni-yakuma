@@ -12,7 +12,9 @@ WINDOW = 6
 MIN_CHARS = 150
 MAX_FILES = 3000
 GENERATED_MIN_WINDOWS = 100
-TRIVIAL = re.compile(r"^(import |from \S+ import|#include|using |require\(|package |[})\]];?,?$|end$|else:?$|\*|//|#|/\*|\"\"\"|''')")
+TRIVIAL = re.compile(
+    r"^(import |from \S+ import|#include|using |require\(|package |[})\]];?,?$|end$|else:?$|\*|//|#|/\*|\"\"\"|''')"
+)
 
 
 def code_lines(lines: list[str]) -> list[tuple[int, str]]:
@@ -75,7 +77,7 @@ def detect(repo: Repo) -> Omen:
     reported: set[tuple[str, int]] = set()
     groups = []
     for locs in sorted(clones, key=len, reverse=True):
-        if any((p, l + d) in reported for p, l in locs for d in range(-WINDOW * 2, WINDOW * 2)):
+        if any((p, ln + d) in reported for p, ln in locs for d in range(-WINDOW * 2, WINDOW * 2)):
             continue
         reported.update(locs)
         groups.append(locs)
@@ -86,15 +88,24 @@ def detect(repo: Repo) -> Omen:
     evidence = []
     for locs in groups[:MAX_EVIDENCE]:
         (path, line), others = locs[0], locs[1:]
-        also = ", ".join(f"{p}:{l}" for p, l in others[:3]) + (f" and {len(others) - 3} more" if len(others) > 3 else "")
+        also = ", ".join(f"{p}:{ln}" for p, ln in others[:3]) + (
+            f" and {len(others) - 3} more" if len(others) > 3 else ""
+        )
         evidence.append(Evidence(path=path, line=line, note=f"same {WINDOW}+ lines also at {also}"))
     summary = f"{len(groups)} copied blocks, about {share:.0%} of the code." if groups else "No copy-paste epidemic."
     if bundles:
         summary += f" ({len(bundles)} generated bundle(s) ignored.)"
     return Omen(
-        demon="Deva", sickness="copy-paste spreading", found=sev > 0, severity_hint=sev,
+        demon="Deva",
+        sickness="copy-paste spreading",
+        found=sev > 0,
+        severity_hint=sev,
         summary=summary,
-        metrics={"clone_groups": len(groups), "duplicated_lines": duplicated, "share": round(share, 3),
-                 "generated_copies": len(bundles)},
+        metrics={
+            "clone_groups": len(groups),
+            "duplicated_lines": duplicated,
+            "share": round(share, 3),
+            "generated_copies": len(bundles),
+        },
         evidence=evidence if sev else [],
     )
