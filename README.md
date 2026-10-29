@@ -27,6 +27,41 @@ performed on well-known repositories.
 5. **The ritual page.** One self-contained HTML page: the blessings as oil lamps, then each demon
    with its mask, evidence (linked to the exact commit), monologue and cure.
 
+### Architecture
+
+```mermaid
+flowchart TD
+    target["GitHub URL or local folder"] --> summon["Summon<br/>shallow clone, depth 200<br/><i>summon.py</i>"]
+    summon --> omens
+
+    subgraph omens["Read the omens · no AI"]
+        detectors["18 detectors<br/><i>detectors/*.py</i>"] --> evidence["Evidence<br/>file · line · snippet · numbers<br/><i>omen.py</i>"]
+    end
+
+    evidence --> prompt["Prompt<br/>evidence with ids E1, E2, …<br/>code around it, README<br/><i>prompt.py</i>"]
+
+    subgraph diagnosis["Diagnosis · Gemma"]
+        prompt --> gemma{{"Gemma<br/>AI Studio · OpenRouter · Ollama<br/><i>llm.py</i>"}}
+        gemma --> parse["Parse and validate JSON<br/>pydantic, JSON repair,<br/>one retry, retries on 5xx<br/><i>exorcise.py</i>"]
+    end
+
+    subgraph honesty["Keep it honest"]
+        parse --> guard["Drop demons and evidence<br/>the detectors did not find"]
+        guard --> patch["Find/replace fix → real diff<br/>only if the lines exist and<br/>the patched Python still parses<br/><i>patch.py</i>"]
+    end
+
+    patch --> ritual[("Ritual JSON<br/>out/&lt;repo&gt;.json")]
+
+    ritual --> page["Ritual page<br/>Jinja2 + SVG masks<br/><i>render.py · masks.py</i>"]
+    ritual --> comment["PR comment<br/><i>markdown.py</i>"]
+    ritual --> hall["Hall of Masks<br/>docs/ on GitHub Pages"]
+
+    comment --> action["GitHub Action<br/><i>action.yml</i>"]
+```
+
+The detectors decide **what** is wrong; Gemma only explains it and proposes the cure. That split is
+what keeps the model from inventing demons.
+
 ## The eighteen demons
 
 | Demon | Traditional illness | Code sickness | What the detector looks for |
