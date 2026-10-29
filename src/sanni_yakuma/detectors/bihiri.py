@@ -17,8 +17,25 @@ PY_OPTIONAL_IMPORT = re.compile(r"^\s*except\s*\(?\s*(ImportError|ModuleNotFound
 C_EMPTY_CATCH = re.compile(r"catch\s*(\([^)]*\))?\s*\{\s*\}")
 JS_EMPTY_PROMISE_CATCH = re.compile(r"\.catch\(\s*(\([^)]*\)|\w+)?\s*(=>)?\s*(function\s*\([^)]*\))?\s*\{\s*\}\s*\)")
 C_CATCH_OPEN = re.compile(r"catch\s*(\([^)]*\))?\s*\{\s*(//.*)?$")
-C_LIKE_EXTS = (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".java", ".kt", ".cs",
-               ".php", ".swift", ".scala", ".dart", ".cpp", ".cc", ".vue", ".svelte")
+C_LIKE_EXTS = (
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".mjs",
+    ".cjs",
+    ".java",
+    ".kt",
+    ".cs",
+    ".php",
+    ".swift",
+    ".scala",
+    ".dart",
+    ".cpp",
+    ".cc",
+    ".vue",
+    ".svelte",
+)
 
 
 def next_code_line(lines: list[str], start: int) -> str | None:
@@ -40,7 +57,9 @@ def scan_python(path: str, lines: list[str]) -> list[Evidence]:
         elif PY_EXCEPT.match(line):
             body = next_code_line(lines, i + 1)
             if body is not None and PY_SILENT_BODY.match(body):
-                found.append(Evidence(path=path, line=i + 1, snippet=f"{line.strip()} {body.strip()}", note="error silenced"))
+                found.append(
+                    Evidence(path=path, line=i + 1, snippet=f"{line.strip()} {body.strip()}", note="error silenced")
+                )
     return found
 
 
@@ -66,7 +85,10 @@ def detect(repo: Repo) -> Omen:
     bare = sum(1 for h in hits if h.note == "bare except")
     sev = severity(len(hits), mild=1, clear=4, severe=12)
     return Omen(
-        demon="Bihiri", sickness="swallowed errors", found=sev > 0, severity_hint=sev,
+        demon="Bihiri",
+        sickness="swallowed errors",
+        found=sev > 0,
+        severity_hint=sev,
         summary=f"{len(hits)} places where errors are caught and ignored." if hits else "No swallowed errors found.",
         metrics={"total": len(hits), "bare_except": bare, "files": len({h.path for h in hits})},
         evidence=hits[:MAX_EVIDENCE],
