@@ -25,12 +25,23 @@ KNOWN_KEYS = {
 GENERIC = re.compile(
     r"""(?i)\b\w*(password|passwd|pwd|secret|api_?key|access_?key|auth_?token|token)\w*["']?\s*[:=]\s*["']([^"'\s]{8,})["']"""
 )
-PLACEHOLDER = re.compile(r"(?i)your|my[-_]|xxx|example|changeme|placeholder|dummy|sample|test|fake|<|\$\{|\{\{|%s|\*\*\*|process\.env|environ")
+PLACEHOLDER = re.compile(
+    r"(?i)your|my[-_]|xxx|example|changeme|placeholder|dummy|sample|test|fake|<|\$\{|\{\{|%s|\*\*\*|process\.env|environ"
+)
 ENV_FILE = re.compile(r"^\.env(\.[\w-]+)?$")
 SAFE_ENV = re.compile(r"\.(example|sample|template|dist|defaults?)$")
 DOC_EXTS = (".md", ".rst", ".txt", ".adoc", ".html", ".ipynb")
 DOC_DIRS = {"docs", "doc", "examples", "example", "samples", "fixtures"}
-SKIP_NAMES = {"package-lock.json", "yarn.lock", "pnpm-lock.yaml", "poetry.lock", "uv.lock", "Cargo.lock", "go.sum", "composer.lock"}
+SKIP_NAMES = {
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "poetry.lock",
+    "uv.lock",
+    "Cargo.lock",
+    "go.sum",
+    "composer.lock",
+}
 
 
 def mask(secret: str) -> str:
@@ -69,8 +80,14 @@ def detect(repo: Repo) -> Omen:
                     if "EXAMPLE" in match.group(1):  # AWS's documented sample key
                         continue
                     kinds[kind] += 1
-                    evidence.append(Evidence(path=path, line=number, note=kind,
-                                             snippet=snippet(line.replace(match.group(1), mask(match.group(1))))))
+                    evidence.append(
+                        Evidence(
+                            path=path,
+                            line=number,
+                            note=kind,
+                            snippet=snippet(line.replace(match.group(1), mask(match.group(1)))),
+                        )
+                    )
             if docs:
                 continue
             for match in GENERIC.finditer(line):
@@ -78,8 +95,14 @@ def detect(repo: Repo) -> Omen:
                 if PLACEHOLDER.search(value) or entropy(value) < 3.0:
                     continue
                 kinds["hard-coded " + match.group(1).lower()] += 1
-                evidence.append(Evidence(path=path, line=number, note="hard-coded credential",
-                                         snippet=snippet(line.replace(value, mask(value)))))
+                evidence.append(
+                    Evidence(
+                        path=path,
+                        line=number,
+                        note="hard-coded credential",
+                        snippet=snippet(line.replace(value, mask(value))),
+                    )
+                )
 
     real = sum(n for k, n in kinds.items() if not k.startswith("hard-coded"))
     generic = sum(n for k, n in kinds.items() if k.startswith("hard-coded"))
@@ -94,8 +117,13 @@ def detect(repo: Repo) -> Omen:
     # Known key formats first: they are the real venom.
     evidence.sort(key=lambda e: e.note == "hard-coded credential")
     return Omen(
-        demon="Naga", sickness="security nightmares", found=sev > 0, severity_hint=sev,
-        summary=("Secrets in the code: " + ", ".join(f"{n} {k}" for k, n in kinds.most_common()) + ". (Masked here.)") if sev else "No secrets found.",
+        demon="Naga",
+        sickness="security nightmares",
+        found=sev > 0,
+        severity_hint=sev,
+        summary=("Secrets in the code: " + ", ".join(f"{n} {k}" for k, n in kinds.most_common()) + ". (Masked here.)")
+        if sev
+        else "No secrets found.",
         metrics={"known_secrets": real, "suspected_secrets": generic},
         evidence=evidence[:MAX_EVIDENCE],
     )
