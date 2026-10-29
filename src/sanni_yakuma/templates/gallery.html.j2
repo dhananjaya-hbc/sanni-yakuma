@@ -10,8 +10,9 @@
 header.stage { text-align: center; padding: clamp(48px, 12vh, 140px) 22px clamp(24px, 5vh, 60px); }
 header.stage h1 { font-size: clamp(2.4rem, 7vw, 4.4rem); margin: .3em 0 .2em; }
 header.stage .lede { font-size: 1.15rem; color: var(--dim); max-width: 38em; margin: 0 auto; }
-.masks-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 2em auto 0; max-width: 840px; }
-.masks-row svg { width: 38px; height: auto; opacity: .9; }
+.masks-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; margin: 2.2em auto 0; }
+.masks-row svg { width: 42px; height: auto; }
+.masks-row .sway, .card .demons .sway { display: inline-block; }
 .hall { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; margin: 6vh 0; }
 .card { background: var(--wood); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
 .card:hover { border-color: var(--ember); }
@@ -35,7 +36,7 @@ footer { color: var(--dim); font-size: .92rem; border-top: 1px solid var(--line)
     In the healing ritual of southern Sri Lanka, eighteen Sanni demons are called out, mocked and sent away.
     Here the patients are well-known open-source repositories. Choose one to watch its exorcism.
   </p>
-  <div class="masks-row" aria-hidden="true">{% for m in all_masks %}{{ m }}{% endfor %}</div>
+  <div class="masks-row" aria-hidden="true">{% for m in all_masks %}<span class="sway" style="animation-delay: -{{ loop.index * 0.7 }}s">{{ m }}</span>{% endfor %}</div>
 </header>
 <main>
   <ul class="hall">
@@ -58,5 +59,8 @@ footer { color: var(--dim); font-size: .92rem; border-top: 1px solid var(--line)
   </p>
   <p>Perform your own: <a href="https://github.com/dhananjaya-hbc/sanni-yakuma">github.com/dhananjaya-hbc/sanni-yakuma</a></p>
 </footer>
+<script>
+{% include "_living.js" %}
+</script>
 </body>
 </html>
