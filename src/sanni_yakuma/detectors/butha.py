@@ -37,7 +37,9 @@ def detect(repo: Repo) -> Omen:
         locked = has_lockfile(repo, manifest)
         if not locked and needs_lockfile(repo, manifest.ecosystem):
             no_lock.append(manifest)
-            evidence.append(Evidence(path=manifest.path, note=f"{manifest.total} {manifest.ecosystem} dependencies and no lockfile"))
+            evidence.append(
+                Evidence(path=manifest.path, note=f"{manifest.total} {manifest.ecosystem} dependencies and no lockfile")
+            )
         for name, spec in {**manifest.deps, **manifest.dev}.items():
             if spec.strip().lower() in ALWAYS_LOOSE:
                 wild += 1
@@ -45,7 +47,13 @@ def detect(repo: Repo) -> Omen:
             elif not locked and not spec.strip() and pins_expected(manifest):
                 loose_total += 1
                 if loose_total <= 5:
-                    evidence.append(Evidence(path=manifest.path, snippet=f"{name} {spec or '(no version)'}".strip(), note="no version at all"))
+                    evidence.append(
+                        Evidence(
+                            path=manifest.path,
+                            snippet=f"{name} {spec or '(no version)'}".strip(),
+                            note="no version at all",
+                        )
+                    )
 
     if (no_lock and loose_total >= 5) or wild >= 3:
         sev = 3
@@ -56,9 +64,15 @@ def detect(repo: Repo) -> Omen:
     else:
         sev = 0
     return Omen(
-        demon="Butha", sickness="dependency hell", found=sev > 0, severity_hint=sev,
-        summary=(f"{len(no_lock)} manifest(s) without a lockfile, {loose_total} unpinned and {wild} wildcard dependencies."
-                 if sev else "Dependencies are pinned or locked."),
+        demon="Butha",
+        sickness="dependency hell",
+        found=sev > 0,
+        severity_hint=sev,
+        summary=(
+            f"{len(no_lock)} manifest(s) without a lockfile, {loose_total} unpinned and {wild} wildcard dependencies."
+            if sev
+            else "Dependencies are pinned or locked."
+        ),
         metrics={"manifests_without_lock": len(no_lock), "unpinned": loose_total, "wildcards": wild},
         evidence=evidence[:MAX_EVIDENCE],
     )
