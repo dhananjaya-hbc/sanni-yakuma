@@ -77,8 +77,7 @@ def _openrouter(prompt: str, model: str, temperature: float) -> str:
         resp = httpx.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={"Authorization": f"Bearer {_require('OPENROUTER_API_KEY')}"},
-            json={"model": model, "temperature": temperature,
-                  "messages": [{"role": "user", "content": prompt}]},
+            json={"model": model, "temperature": temperature, "messages": [{"role": "user", "content": prompt}]},
             timeout=TIMEOUT_SECONDS,
         )
         resp.raise_for_status()
@@ -94,8 +93,7 @@ def _ollama(prompt: str, model: str, temperature: float) -> str:
     try:
         resp = httpx.post(
             f"{host}/api/generate",
-            json={"model": model, "prompt": prompt, "stream": False,
-                  "options": {"temperature": temperature}},
+            json={"model": model, "prompt": prompt, "stream": False, "options": {"temperature": temperature}},
             timeout=TIMEOUT_SECONDS * 2,
         )
         resp.raise_for_status()
