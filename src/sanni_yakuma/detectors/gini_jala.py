@@ -7,9 +7,13 @@ from ..omen import Evidence, Omen
 from ..repo import Repo
 from .base import severity, snippet
 
-FIX_RE = re.compile(r"^(fix|hotfix|bugfix)\b|\b(fix(es|ed)?|hotfix|bugfix|oops|revert|typo|broke(n)?|patch(ed)?)\b", re.IGNORECASE)
+FIX_RE = re.compile(
+    r"^(fix|hotfix|bugfix)\b|\b(fix(es|ed)?|hotfix|bugfix|oops|revert|typo|broke(n)?|patch(ed)?)\b", re.IGNORECASE
+)
 # Panic words: the fever is high when commits sound like these.
-HOT_RE = re.compile(r"\b(hotfix|oops|revert|urgent|again|quick ?fix|asap|wtf|really|actually|forgot|wip)\b|!!", re.IGNORECASE)
+HOT_RE = re.compile(
+    r"\b(hotfix|oops|revert|urgent|again|quick ?fix|asap|wtf|really|actually|forgot|wip)\b|!!", re.IGNORECASE
+)
 BOT_RE = re.compile(r"\[bot\]|dependabot|renovate|github-actions", re.IGNORECASE)
 # "feat: add hotfix detector" talks about fixes but is not one.
 OTHER_TYPE_RE = re.compile(r"^(feat|docs|test|tests|chore|refactor|ci|build|style|perf)(\([^)]*\))?!?:", re.IGNORECASE)
@@ -25,9 +29,14 @@ def detect(repo: Repo) -> Omen:
             commits.append(parts)
 
     if len(commits) < MIN_COMMITS:
-        return Omen(demon="Gini Jala", sickness="hotfix fever", found=False, severity_hint=0,
-                    summary=f"Only {len(commits)} commits; too few to take the temperature.",
-                    metrics={"commits": len(commits)})
+        return Omen(
+            demon="Gini Jala",
+            sickness="hotfix fever",
+            found=False,
+            severity_hint=0,
+            summary=f"Only {len(commits)} commits; too few to take the temperature.",
+            metrics={"commits": len(commits)},
+        )
 
     feverish = [c for c in commits if not OTHER_TYPE_RE.match(c[2])]
     fixes = [c for c in feverish if FIX_RE.search(c[2])]
@@ -44,9 +53,18 @@ def detect(repo: Repo) -> Omen:
         sev = max(sev, 1)
         evidence.insert(0, Evidence(note=f"{burst} fix commits on {burst_day} alone"))
     return Omen(
-        demon="Gini Jala", sickness="hotfix fever", found=sev > 0, severity_hint=sev,
+        demon="Gini Jala",
+        sickness="hotfix fever",
+        found=sev > 0,
+        severity_hint=sev,
         summary=f"{share:.0%} of the last {len(commits)} commits are fixes; {len(hot)} sound like panic.",
-        metrics={"commits": len(commits), "fix_commits": len(fixes), "fix_share": round(share, 2),
-                 "panic_commits": len(hot), "worst_day": burst_day or None, "worst_day_fixes": burst},
+        metrics={
+            "commits": len(commits),
+            "fix_commits": len(fixes),
+            "fix_share": round(share, 2),
+            "panic_commits": len(hot),
+            "worst_day": burst_day or None,
+            "worst_day_fixes": burst,
+        },
         evidence=evidence if sev else [],
     )
