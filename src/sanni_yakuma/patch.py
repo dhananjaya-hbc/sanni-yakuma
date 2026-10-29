@@ -19,8 +19,9 @@ def indent_of(line: str) -> str:
 def locate(lines: list[str], find: list[str]) -> int | None:
     """Index where `find` occurs exactly once, ignoring indentation; None if absent or ambiguous."""
     wanted = [line.strip() for line in find]
-    hits = [i for i in range(len(lines) - len(find) + 1)
-            if [line.strip() for line in lines[i : i + len(find)]] == wanted]
+    hits = [
+        i for i in range(len(lines) - len(find) + 1) if [line.strip() for line in lines[i : i + len(find)]] == wanted
+    ]
     return hits[0] if len(hits) == 1 else None
 
 
@@ -34,7 +35,7 @@ def reindent(replace: list[str], given_first: str, actual_first: str) -> list[st
         if not line.strip():
             out.append(line)
         elif line.startswith(given):
-            out.append(actual + line[len(given):])
+            out.append(actual + line[len(given) :])
         else:
             out.append(actual + line.lstrip())
     return out
@@ -67,7 +68,7 @@ def make_diff(repo: Repo, patch: Patch) -> str | None:
     if start is None:
         return None
     replace = reindent(patch.replace.splitlines(), find[0], lines[start])
-    new = lines[:start] + replace + lines[start + len(find):]
+    new = lines[:start] + replace + lines[start + len(find) :]
     if new == lines or not still_valid(patch.path, "\n".join(new)):
         return None
     diff = difflib.unified_diff(lines, new, f"a/{patch.path}", f"b/{patch.path}", n=2, lineterm="")
