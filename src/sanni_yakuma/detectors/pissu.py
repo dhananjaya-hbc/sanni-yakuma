@@ -31,7 +31,14 @@ def detect(repo: Repo) -> Omen:
         lines = repo.lines(path)
         total_lines += len(lines)
         css_like = path.endswith((".vue", ".svelte"))
+        in_docstring = False
         for number, line in enumerate(lines, start=1):
+            # Numbers in docstrings and other triple-quoted text are prose, not magic.
+            quotes = line.count('"""') + line.count("'''")
+            if in_docstring or quotes:
+                if quotes % 2:
+                    in_docstring = not in_docstring
+                continue
             if len(line) > 400:
                 continue
             if m := ABS_PATH.search(line):
