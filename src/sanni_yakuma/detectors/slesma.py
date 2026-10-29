@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from ..omen import Evidence, Omen
-from ..repo import Repo
+from ..repo import Repo, is_test_path
 from .base import MAX_EVIDENCE
 
 JUNK_DIRS = {"node_modules", ".venv", "venv", "__pycache__", ".pytest_cache",
@@ -27,6 +27,8 @@ def detect(repo: Repo) -> Omen:
             continue
         if p.name in JUNK_NAMES:
             junk_files.append(path)
+        elif is_test_path(path):  # archives and big files in tests are fixtures on purpose
+            continue
         elif p.suffix.lower() in BINARY_EXTS:
             binaries.append(path)
         elif repo.size(path) > HUGE_BYTES:
