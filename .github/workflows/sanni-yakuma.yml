@@ -1,0 +1,22 @@
+# The exorcism performed on this repository's own pull requests.
+name: Sanni Yakuma
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  exorcise:
+    # Secrets are not available to pull requests from forks.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 200
+      - uses: ./
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
