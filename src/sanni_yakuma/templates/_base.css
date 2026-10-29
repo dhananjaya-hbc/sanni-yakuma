@@ -29,3 +29,18 @@ a { color: var(--gold); }
 code { font: .86em var(--mono); background: #2a1d15; padding: .1em .35em; border-radius: 4px; color: #f6d79a; }
 h1, h2, h3, h4 { font-weight: normal; line-height: 1.2; }
 .kicker { font-variant: small-caps; letter-spacing: .14em; color: var(--ember); font-size: .95rem; margin: 0; }
+
+/* Living masks: crowns flicker, spiral eyes turn, masks sway like dancers. */
+.crown { transform-box: fill-box; transform-origin: 50% 100%; animation: crown 2.6s ease-in-out infinite; }
+@keyframes crown {
+  0%, 100% { transform: scaleY(1); } 30% { transform: scaleY(1.06) skewX(-1.5deg); } 65% { transform: scaleY(.97) skewX(1deg); }
+}
+.spiral { transform-box: fill-box; transform-origin: center; animation: spin 7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.sway { transform-origin: 50% 85%; animation: sway 5.5s ease-in-out infinite; }
+@keyframes sway { 0%, 100% { transform: rotate(-1.6deg); } 50% { transform: rotate(1.6deg) translateY(-3px); } }
+.pupil { transition: transform .3s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .crown, .spiral, .sway { animation: none; }
+  .pupil { transition: none; }
+}
