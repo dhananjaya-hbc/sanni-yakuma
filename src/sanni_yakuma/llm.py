@@ -11,6 +11,8 @@ import os
 import httpx
 
 DEFAULT_MODEL = "gemma-4-26b-a4b-it"
+# A diagnosis normally takes 2-3 minutes; past this, the request is stuck.
+TIMEOUT_SECONDS = 300
 
 
 class LLMError(RuntimeError):
@@ -51,7 +53,10 @@ def _aistudio(prompt: str, model: str, temperature: float) -> str:
     from google import genai
     from google.genai import errors, types
 
-    client = genai.Client(api_key=_require("GEMINI_API_KEY"))
+    client = genai.Client(
+        api_key=_require("GEMINI_API_KEY"),
+        http_options=types.HttpOptions(timeout=TIMEOUT_SECONDS * 1000),  # milliseconds
+    )
     try:
         resp = client.models.generate_content(
             model=model,
@@ -74,7 +79,7 @@ def _openrouter(prompt: str, model: str, temperature: float) -> str:
             headers={"Authorization": f"Bearer {_require('OPENROUTER_API_KEY')}"},
             json={"model": model, "temperature": temperature,
                   "messages": [{"role": "user", "content": prompt}]},
-            timeout=180,
+            timeout=TIMEOUT_SECONDS,
         )
         resp.raise_for_status()
         return resp.json()["choices"][0]["message"]["content"]
@@ -91,7 +96,7 @@ def _ollama(prompt: str, model: str, temperature: float) -> str:
             f"{host}/api/generate",
             json={"model": model, "prompt": prompt, "stream": False,
                   "options": {"temperature": temperature}},
-            timeout=600,
+            timeout=TIMEOUT_SECONDS * 2,
         )
         resp.raise_for_status()
         return resp.json()["response"]
