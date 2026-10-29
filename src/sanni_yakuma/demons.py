@@ -1,7 +1,9 @@
 """The 18 Sanni demons: traditional illness and the code sickness each one causes here.
 
-Illnesses follow the Wikipedia article "Sanni Yakuma" (to be checked against a
-second source before publishing).
+Illnesses follow the Wikipedia article "Sanni Yakuma". Checked against Science
+Museum Group mask records (Maha Kola Sanniya as chief disease-demon with 18
+attendants; Deva Sanniya, epidemics; Kora Sanniya, lameness and paralysis).
+Spellings vary between sources (Golu/Gulu, Pith/Pita).
 """
 
 from typing import NamedTuple
