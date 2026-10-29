@@ -50,8 +50,13 @@ def detect(repo: Repo) -> Omen:
         for path, n in per_file.most_common(8)
     ]
     return Omen(
-        demon="Amukku", sickness="log vomit", found=sev > 0, severity_hint=sev,
-        summary=f"{total} debug prints ({per_kloc:.1f} per 1,000 lines) in {len(per_file)} files." if total else "No stray debug prints.",
+        demon="Amukku",
+        sickness="log vomit",
+        found=sev > 0,
+        severity_hint=sev,
+        summary=f"{total} debug prints ({per_kloc:.1f} per 1,000 lines) in {len(per_file)} files."
+        if total
+        else "No stray debug prints.",
         metrics={"total": total, "per_kloc": round(per_kloc, 2), "files": len(per_file), "lines_scanned": total_lines},
         evidence=evidence if sev else [],
     )
