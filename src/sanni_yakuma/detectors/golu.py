@@ -59,13 +59,24 @@ def detect(repo: Repo) -> Omen:
     if not readmes:
         summary = "The repo has no README; it cannot speak for itself."
     elif sev:
-        summary = f"README has {words} words; docstring coverage {coverage:.0%}." if coverage is not None else f"README has only {words} words."
+        summary = (
+            f"README has {words} words; docstring coverage {coverage:.0%}."
+            if coverage is not None
+            else f"README has only {words} words."
+        )
     else:
         summary = f"README has {words} words."
     return Omen(
-        demon="Golu", sickness="silent repo", found=sev > 0, severity_hint=sev,
+        demon="Golu",
+        sickness="silent repo",
+        found=sev > 0,
+        severity_hint=sev,
         summary=summary,
-        metrics={"readme": readmes[0] if readmes else None, "readme_words": words,
-                 "python_defs": total, "docstring_coverage": round(coverage, 2) if coverage is not None else None},
+        metrics={
+            "readme": readmes[0] if readmes else None,
+            "readme_words": words,
+            "python_defs": total,
+            "docstring_coverage": round(coverage, 2) if coverage is not None else None,
+        },
         evidence=evidence,
     )
