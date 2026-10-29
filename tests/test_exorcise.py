@@ -66,6 +66,13 @@ def test_extract_json_tolerates_fences():
     assert extract_json('Here you go:\n```json\n{"a": 1}\n```') == {"a": 1}
 
 
+def test_extract_json_repairs_code_strings():
+    # A raw newline and an unescaped quote inside a string, as Gemma writes them in patches.
+    broken = '{"find": "x = re.compile(r"\\b")\nprint(1)", "ok": true}'
+    data = extract_json(broken)
+    assert data["ok"] is True and "re.compile" in data["find"]
+
+
 def test_diagnose_happy_path(sick):
     repo, omens, ids = sick
     gemma = FakeGemma(answer([possession("bihiri", ids)]))
