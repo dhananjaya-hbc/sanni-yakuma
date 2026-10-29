@@ -31,32 +31,31 @@ performed on well-known repositories.
 
 ```mermaid
 flowchart TD
-    target["GitHub URL or local folder"] --> summon["Summon<br/>shallow clone, depth 200<br/><i>summon.py</i>"]
-    summon --> omens
+    target["GitHub URL or local folder"] --> summon["Summon: shallow clone<br/>summon.py"]
+    summon --> detectors
 
-    subgraph omens["Read the omens · no AI"]
-        detectors["18 detectors<br/><i>detectors/*.py</i>"] --> evidence["Evidence<br/>file · line · snippet · numbers<br/><i>omen.py</i>"]
+    subgraph omens["1. Read the omens, no AI"]
+        detectors["18 detectors<br/>detectors/*.py"] --> evidence["Evidence: file, line, snippet, numbers<br/>omen.py"]
     end
 
-    evidence --> prompt["Prompt<br/>evidence with ids E1, E2, …<br/>code around it, README<br/><i>prompt.py</i>"]
+    evidence --> prompt
 
-    subgraph diagnosis["Diagnosis · Gemma"]
-        prompt --> gemma{{"Gemma<br/>AI Studio · OpenRouter · Ollama<br/><i>llm.py</i>"}}
-        gemma --> parse["Parse and validate JSON<br/>pydantic, JSON repair,<br/>one retry, retries on 5xx<br/><i>exorcise.py</i>"]
+    subgraph diagnosis["2. Diagnosis with Gemma"]
+        prompt["Prompt: evidence with ids E1, E2 ...<br/>prompt.py"] --> gemma["Gemma via AI Studio, OpenRouter or Ollama<br/>llm.py"]
+        gemma --> parse["Validate JSON: pydantic, JSON repair, retries<br/>exorcise.py"]
     end
 
-    subgraph honesty["Keep it honest"]
-        parse --> guard["Drop demons and evidence<br/>the detectors did not find"]
-        guard --> patch["Find/replace fix → real diff<br/>only if the lines exist and<br/>the patched Python still parses<br/><i>patch.py</i>"]
+    subgraph honesty["3. Keep it honest"]
+        guard["Drop demons and evidence the detectors did not find"] --> patch["Build the fix diff only if the lines exist<br/>and the patched Python still parses<br/>patch.py"]
     end
 
-    patch --> ritual[("Ritual JSON<br/>out/&lt;repo&gt;.json")]
+    parse --> guard
+    patch --> ritual["Ritual JSON<br/>out/repo.json"]
 
-    ritual --> page["Ritual page<br/>Jinja2 + SVG masks<br/><i>render.py · masks.py</i>"]
-    ritual --> comment["PR comment<br/><i>markdown.py</i>"]
+    ritual --> page["Ritual page: Jinja2 and SVG masks<br/>render.py, masks.py"]
+    ritual --> comment["PR comment<br/>markdown.py"]
     ritual --> hall["Hall of Masks<br/>docs/ on GitHub Pages"]
-
-    comment --> action["GitHub Action<br/><i>action.yml</i>"]
+    comment --> action["GitHub Action<br/>action.yml"]
 ```
 
 The detectors decide **what** is wrong; Gemma only explains it and proposes the cure. That split is
