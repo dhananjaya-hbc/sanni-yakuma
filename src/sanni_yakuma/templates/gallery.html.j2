@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hall of Masks · Sanni Yakuma</title>
+<meta name="description" content="Code exorcisms of well-known repositories, after the Sanni Yakuma healing ritual of southern Sri Lanka.">
+<style>
+{% include "_base.css" %}
+header.stage { text-align: center; padding: clamp(48px, 12vh, 140px) 22px clamp(24px, 5vh, 60px); }
+header.stage h1 { font-size: clamp(2.4rem, 7vw, 4.4rem); margin: .3em 0 .2em; }
+header.stage .lede { font-size: 1.15rem; color: var(--dim); max-width: 38em; margin: 0 auto; }
+.masks-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 2em auto 0; max-width: 840px; }
+.masks-row svg { width: 38px; height: auto; opacity: .9; }
+.hall { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; margin: 6vh 0; }
+.card { background: var(--wood); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
+.card:hover { border-color: var(--ember); }
+.card h2 { font-size: 1.3rem; margin: 0 0 .2em; word-break: break-word; }
+.card h2 a { color: var(--cream); text-decoration: none; }
+.card h2 a::after { content: ""; position: absolute; inset: 0; }
+.card { position: relative; }
+.card .count { color: var(--gold); margin: 0 0 .7em; }
+.card .demons { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: .8em; }
+.card .demons svg { width: 40px; height: auto; }
+.card .root { font-size: .92rem; color: var(--dim); margin: 0; flex: 1; }
+.card .meta { font-size: .8rem; color: var(--dim); margin: .9em 0 0; }
+footer { color: var(--dim); font-size: .92rem; border-top: 1px solid var(--line); padding: 40px 22px 70px; }
+</style>
+</head>
+<body>
+<header class="stage">
+  <p class="kicker">Sanni Yakuma</p>
+  <h1>The Hall of Masks</h1>
+  <p class="lede">
+    In the healing ritual of southern Sri Lanka, eighteen Sanni demons are called out, mocked and sent away.
+    Here the patients are well-known open-source repositories. Choose one to watch its exorcism.
+  </p>
+  <div class="masks-row" aria-hidden="true">{% for m in all_masks %}{{ m }}{% endfor %}</div>
+</header>
+<main>
+  <ul class="hall">
+    {% for c in cards %}
+    <li class="card">
+      <h2><a href="{{ c.href }}">{{ c.r.repo }}</a></h2>
+      <p class="count">{{ c.r.possessions | length }} of 18 demons</p>
+      <div class="demons">{% for m in c.masks %}{{ m }}{% endfor %}</div>
+      <p class="root">{{ c.r.kola_sanniya.root_cause }}</p>
+      <p class="meta">{{ c.date }} · {{ c.r.model }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+</main>
+<footer>
+  <p>
+    Every demon in these rituals rests on evidence that plain detectors found in the code; an open Gemma model wrote
+    the monologues and the cures, and anything it claimed beyond the evidence was thrown out. The masks are original
+    drawings made in code, not copies of real masks.
+  </p>
+  <p>Perform your own: <a href="https://github.com/dhananjaya-hbc/sanni-yakuma">github.com/dhananjaya-hbc/sanni-yakuma</a></p>
+</footer>
+</body>
+</html>
