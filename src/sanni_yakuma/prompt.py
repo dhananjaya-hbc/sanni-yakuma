@@ -71,7 +71,11 @@ SHAPE = """\
       "exorcism": {
         "summary": "...",
         "steps": ["..."],
-        "patch": {"path": "src/app/db.py", "find": "    except:\n        pass", "replace": "    except KeyError as exc:\n        log.warning(exc)"}
+        "patch": {
+          "path": "src/app/db.py",
+          "find": "    except:\n        pass",
+          "replace": "    except KeyError as exc:\n        log.warning(exc)"
+        }
       }
     }
   ],
@@ -120,15 +124,21 @@ def omens_section(omens: list[Omen], index: dict[str, tuple[str, Evidence]]) -> 
     suspected, absent = [], []
     for omen in omens:
         if omen.found:
-            lines = [f"## {omen.demon} ({omen.sickness}), detector severity hint {omen.severity_hint}",
-                     f"Summary: {omen.summary}",
-                     f"Metrics: {json.dumps(omen.metrics, ensure_ascii=False)}"]
+            lines = [
+                f"## {omen.demon} ({omen.sickness}), detector severity hint {omen.severity_hint}",
+                f"Summary: {omen.summary}",
+                f"Metrics: {json.dumps(omen.metrics, ensure_ascii=False)}",
+            ]
             lines += [f"- {eid}: {describe_evidence(index[eid][1])}" for eid in ids_by_demon.get(omen.demon, [])]
             suspected.append("\n".join(lines))
         else:
             absent.append(f"- {omen.demon} ({omen.sickness}): {omen.summary}")
-    return ("# Suspected demons (with evidence)\n\n" + "\n\n".join(suspected or ["(none)"])
-            + "\n\n# Absent demons (possible blessings)\n" + "\n".join(absent or ["(none)"]))
+    return (
+        "# Suspected demons (with evidence)\n\n"
+        + "\n\n".join(suspected or ["(none)"])
+        + "\n\n# Absent demons (possible blessings)\n"
+        + "\n".join(absent or ["(none)"])
+    )
 
 
 def code_context(repo: Repo, index: dict[str, tuple[str, Evidence]]) -> str:
@@ -157,18 +167,26 @@ def repo_overview(repo: Repo, name: str) -> str:
     langs = Counter(PurePosixPath(f).suffix for f in repo.source_files).most_common(6)
     readme = next((f for f in repo.files if "/" not in f and f.lower().startswith("readme")), None)
     text = (repo.read_text(readme) or "")[:README_CHARS] if readme else "(no README)"
-    return (f"# The patient: {name}\n"
-            f"Files: {len(repo.files)} tracked, {len(repo.source_files)} source, {len(repo.test_files)} test.\n"
-            f"Languages: {', '.join(f'{ext} x{n}' for ext, n in langs) or 'none'}\n"
-            f"Top level: {', '.join(top[:40])}\n\n"
-            f"README (start):\n<<<\n{text}\n>>>")
+    return (
+        f"# The patient: {name}\n"
+        f"Files: {len(repo.files)} tracked, {len(repo.source_files)} source, {len(repo.test_files)} test.\n"
+        f"Languages: {', '.join(f'{ext} x{n}' for ext, n in langs) or 'none'}\n"
+        f"Top level: {', '.join(top[:40])}\n\n"
+        f"README (start):\n<<<\n{text}\n>>>"
+    )
 
 
 def build_prompt(repo: Repo, omens: list[Omen], name: str) -> tuple[str, dict[str, tuple[str, Evidence]]]:
     index = index_evidence(omens)
-    prompt = "\n\n".join([
-        STORY, demon_table(), RULES, repo_overview(repo, name),
-        omens_section(omens, index), code_context(repo, index),
-        "# Answer with JSON in exactly this shape\n" + SHAPE,
-    ])
+    prompt = "\n\n".join(
+        [
+            STORY,
+            demon_table(),
+            RULES,
+            repo_overview(repo, name),
+            omens_section(omens, index),
+            code_context(repo, index),
+            "# Answer with JSON in exactly this shape\n" + SHAPE,
+        ]
+    )
     return prompt, index
