@@ -5,6 +5,7 @@ whitespace). So Gemma only says which lines to find and what to put instead;
 we locate them in the real file and let difflib write the diff.
 """
 
+import ast
 import difflib
 
 from .diagnosis import Patch
@@ -39,6 +40,17 @@ def reindent(replace: list[str], given_first: str, actual_first: str) -> list[st
     return out
 
 
+def still_valid(path: str, text: str) -> bool:
+    """A cure must not break the patient: patched Python has to parse."""
+    if not path.endswith(".py"):
+        return True
+    try:
+        ast.parse(text)
+    except SyntaxError:
+        return False
+    return True
+
+
 def make_diff(repo: Repo, patch: Patch) -> str | None:
     text = repo.read_text(patch.path)
     if text is None or patch.path not in repo.files:
@@ -56,7 +68,7 @@ def make_diff(repo: Repo, patch: Patch) -> str | None:
         return None
     replace = reindent(patch.replace.splitlines(), find[0], lines[start])
     new = lines[:start] + replace + lines[start + len(find):]
-    if new == lines:
+    if new == lines or not still_valid(patch.path, "\n".join(new)):
         return None
     diff = difflib.unified_diff(lines, new, f"a/{patch.path}", f"b/{patch.path}", n=2, lineterm="")
     return "\n".join(diff) + "\n"
