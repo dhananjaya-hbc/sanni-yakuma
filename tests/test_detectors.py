@@ -190,6 +190,18 @@ def test_gini_jala_fever(make_repo):
     assert omen.severity_hint >= 2 and omen.metrics["fix_commits"] == 20
 
 
+def test_gini_jala_ignores_other_commit_types(make_repo):
+    repo = make_repo({"a.py": ""})
+    env = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t",
+           "PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin"}
+    import subprocess
+    messages = ["feat: add hotfix fever detector", "docs: explain the fix flow", "test(gini): cover oops commits"] * 8
+    for msg in messages:
+        subprocess.run(["git", "-C", str(repo.root), "commit", "-q", "--allow-empty", "-m", msg], check=True, env=env)
+    omen = gini_jala.detect(repo)
+    assert omen.metrics["fix_commits"] == 0 and omen.metrics["panic_commits"] == 0 and not omen.found
+
+
 def test_gini_jala_needs_enough_commits(make_repo):
     assert not gini_jala.detect(make_repo({"a.py": ""})).found
 
