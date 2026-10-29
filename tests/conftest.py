@@ -26,9 +26,15 @@ def make_repo(tmp_path):
                 path.write_text(content)
         _git(root, "init", "-q")
         _git(root, "add", "-A", "-f")
-        env = {"GIT_AUTHOR_DATE": commit_date, "GIT_COMMITTER_DATE": commit_date,
-               "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
-               "GIT_COMMITTER_EMAIL": "t@t", "PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin"}
+        env = {
+            "GIT_AUTHOR_DATE": commit_date,
+            "GIT_COMMITTER_DATE": commit_date,
+            "GIT_AUTHOR_NAME": "t",
+            "GIT_AUTHOR_EMAIL": "t@t",
+            "GIT_COMMITTER_NAME": "t",
+            "GIT_COMMITTER_EMAIL": "t@t",
+            "PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin",
+        }
         _git(root, "commit", "-q", "--allow-empty", "-m", "init", env=env)
         return Repo(root=root)
 
