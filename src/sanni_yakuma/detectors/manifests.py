@@ -106,15 +106,21 @@ def parse(repo: Repo, path: str) -> Manifest | None:
 
     if name == "Pipfile":
         data = _toml(text)
-        return Manifest(path, "python",
-                        {k: _spec(v) for k, v in data.get("packages", {}).items()},
-                        {k: _spec(v) for k, v in data.get("dev-packages", {}).items()})
+        return Manifest(
+            path,
+            "python",
+            {k: _spec(v) for k, v in data.get("packages", {}).items()},
+            {k: _spec(v) for k, v in data.get("dev-packages", {}).items()},
+        )
 
     if name == "Cargo.toml":
         data = _toml(text)
-        return Manifest(path, "rust",
-                        {k: _spec(v) for k, v in data.get("dependencies", {}).items()},
-                        {k: _spec(v) for k, v in data.get("dev-dependencies", {}).items()})
+        return Manifest(
+            path,
+            "rust",
+            {k: _spec(v) for k, v in data.get("dependencies", {}).items()},
+            {k: _spec(v) for k, v in data.get("dev-dependencies", {}).items()},
+        )
 
     if name == "go.mod":
         deps, in_block = {}, False
@@ -127,7 +133,7 @@ def parse(repo: Repo, path: str) -> Manifest | None:
                 in_block = False
                 continue
             if line.startswith("require "):
-                line, in_block_line = line[len("require "):], True
+                line, in_block_line = line[len("require ") :], True
             else:
                 in_block_line = in_block
             if in_block_line and line and "// indirect" not in line:
