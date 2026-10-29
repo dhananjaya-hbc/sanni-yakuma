@@ -14,8 +14,11 @@ def test_comment_has_demons_evidence_and_fix():
 
 
 def test_comment_cannot_ping_or_close_issues():
-    md = comment(ritual(possessions=[], blessings=[]).model_copy(update={
-        "kola_sanniya": ritual().kola_sanniya.model_copy(update={"root_cause": "Ask @octocat, fixes #12"})}))
+    md = comment(
+        ritual(possessions=[], blessings=[]).model_copy(
+            update={"kola_sanniya": ritual().kola_sanniya.model_copy(update={"root_cause": "Ask @octocat, fixes #12"})}
+        )
+    )
     assert "@octocat" not in md and "#12" not in md
 
 
