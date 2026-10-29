@@ -6,12 +6,43 @@ from ..omen import Evidence, Omen
 from ..repo import Repo, is_test_path
 from .base import MAX_EVIDENCE
 
-JUNK_DIRS = {"node_modules", ".venv", "venv", "__pycache__", ".pytest_cache",
-             ".idea", ".mypy_cache", "bower_components", ".next", ".nuxt"}
+JUNK_DIRS = {
+    "node_modules",
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".idea",
+    ".mypy_cache",
+    "bower_components",
+    ".next",
+    ".nuxt",
+}
 JUNK_NAMES = {".DS_Store", "Thumbs.db", ".env", "desktop.ini"}
-BINARY_EXTS = {".exe", ".dll", ".so", ".dylib", ".o", ".a", ".pyc", ".class",
-               ".jar", ".war", ".zip", ".tar", ".gz", ".tgz", ".rar", ".7z",
-               ".whl", ".egg", ".apk", ".dmg", ".iso", ".bin"}
+BINARY_EXTS = {
+    ".exe",
+    ".dll",
+    ".so",
+    ".dylib",
+    ".o",
+    ".a",
+    ".pyc",
+    ".class",
+    ".jar",
+    ".war",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".tgz",
+    ".rar",
+    ".7z",
+    ".whl",
+    ".egg",
+    ".apk",
+    ".dmg",
+    ".iso",
+    ".bin",
+}
 HUGE_BYTES = 1_000_000
 
 
@@ -41,7 +72,9 @@ def detect(repo: Repo) -> Omen:
         evidence.append(Evidence(path=f"{name}/", note=f"{count} files committed from {name}/"))
     evidence += [Evidence(path=f, note="should never be committed") for f in junk_files]
     evidence += [Evidence(path=f, note="compiled or archive file") for f in binaries]
-    evidence += [Evidence(path=f, note=f"{repo.size(f) / 1e6:.1f} MB") for f in sorted(huge, key=repo.size, reverse=True)]
+    evidence += [
+        Evidence(path=f, note=f"{repo.size(f) / 1e6:.1f} MB") for f in sorted(huge, key=repo.size, reverse=True)
+    ]
 
     clogs = len(junk_dirs) + len(junk_files) + len(binaries) + len(huge)
     if junk_dirs or ".env" in {Path(f).name for f in junk_files}:
@@ -53,9 +86,19 @@ def detect(repo: Repo) -> Omen:
     else:
         sev = 0
     return Omen(
-        demon="Slesma", sickness="clogged repo", found=sev > 0, severity_hint=sev,
-        summary=f"{clogs} clog(s)" + ("" if gitignore else " and no .gitignore") + "." if sev else "Clean: .gitignore present, no junk committed.",
-        metrics={"gitignore": gitignore, "junk_dirs": len(junk_dirs), "junk_files": len(junk_files),
-                 "binaries": len(binaries), "huge_files": len(huge)},
+        demon="Slesma",
+        sickness="clogged repo",
+        found=sev > 0,
+        severity_hint=sev,
+        summary=f"{clogs} clog(s)" + ("" if gitignore else " and no .gitignore") + "."
+        if sev
+        else "Clean: .gitignore present, no junk committed.",
+        metrics={
+            "gitignore": gitignore,
+            "junk_dirs": len(junk_dirs),
+            "junk_files": len(junk_files),
+            "binaries": len(binaries),
+            "huge_files": len(huge),
+        },
         evidence=evidence[:MAX_EVIDENCE],
     )
