@@ -58,17 +58,22 @@ def build_context(ritual: Ritual) -> dict:
     demons = []
     for p in ritual.possessions:
         evidence = [(eid, index[eid][1], evidence_url(ritual, index[eid][1])) for eid in p.evidence_ids if eid in index]
-        demons.append({
-            "p": p,
-            "info": BY_NAME[p.demon],
-            "omen": omens.get(p.demon),
-            "mask": Markup(mask_svg(p.demon)),
-            "severity": SEVERITY[p.severity],
-            "evidence": evidence,
-            "diff": diff_lines(p.exorcism.diff),
-        })
-    spared = [{"name": name, "info": BY_NAME[name], "summary": omens[name].summary, "mask": Markup(mask_svg(name))}
-              for name in ritual.spared if name in omens]
+        demons.append(
+            {
+                "p": p,
+                "info": BY_NAME[p.demon],
+                "omen": omens.get(p.demon),
+                "mask": Markup(mask_svg(p.demon)),
+                "severity": SEVERITY[p.severity],
+                "evidence": evidence,
+                "diff": diff_lines(p.exorcism.diff),
+            }
+        )
+    spared = [
+        {"name": name, "info": BY_NAME[name], "summary": omens[name].summary, "mask": Markup(mask_svg(name))}
+        for name in ritual.spared
+        if name in omens
+    ]
     when = datetime.fromisoformat(ritual.performed_at)
     return {
         "r": ritual,
@@ -76,7 +81,9 @@ def build_context(ritual: Ritual) -> dict:
         "spared": spared,
         "kola_mask": Markup(kola_svg()),
         "date": when.strftime("%d %B %Y"),
-        "repo_url": f"https://github.com/{'/'.join(parse_github(ritual.url))}" if ritual.url and parse_github(ritual.url) else None,
+        "repo_url": f"https://github.com/{'/'.join(parse_github(ritual.url))}"
+        if ritual.url and parse_github(ritual.url)
+        else None,
         "short_commit": (ritual.commit or "")[:7],
         "clean": [o for o in ritual.omens if not o.found],
     }
@@ -97,12 +104,15 @@ def page_name(ritual: Ritual) -> str:
 
 
 def render_gallery(rituals: list[Ritual]) -> str:
-    cards = [{
-        "r": r,
-        "href": page_name(r),
-        "masks": [Markup(mask_svg(p.demon)) for p in r.possessions],
-        "date": datetime.fromisoformat(r.performed_at).strftime("%d %B %Y"),
-    } for r in sorted(rituals, key=lambda r: len(r.possessions), reverse=True)]
+    cards = [
+        {
+            "r": r,
+            "href": page_name(r),
+            "masks": [Markup(mask_svg(p.demon)) for p in r.possessions],
+            "date": datetime.fromisoformat(r.performed_at).strftime("%d %B %Y"),
+        }
+        for r in sorted(rituals, key=lambda r: len(r.possessions), reverse=True)
+    ]
     all_masks = [Markup(mask_svg(d)) for d in BY_NAME]
     return _env().get_template("gallery.html.j2").render(cards=cards, all_masks=all_masks)
 
