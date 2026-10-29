@@ -121,13 +121,14 @@ def _eye(cx: int, cy: int, look: Look) -> str:
         )
     if kind == "spiral":  # Pissu: madness
         return rim + (
-            f'<path d="M{cx},{cy} m-2,0 a2,2 0 1,1 4,0 a5,5 0 1,1 -9,0 a8,8 0 1,1 15,0 a11,11 0 1,1 -21,0" '
-            f'fill="none" stroke="{BLACK}" stroke-width="2.5"/>'
+            f'<path class="spiral" d="M{cx},{cy} m-2,0 a2,2 0 1,1 4,0 a5,5 0 1,1 -9,0 a8,8 0 1,1 15,0 '
+            f'a11,11 0 1,1 -21,0" fill="none" stroke="{BLACK}" stroke-width="2.5"/>'
         )
     pupil_y = cy - 8 if kind == "rolling" else cy
+    # The pupil is its own group so the page can make the eyes follow the viewer.
     eye = (
-        rim + f'<circle cx="{cx}" cy="{pupil_y}" r="7.5" fill="{BLACK}"/><circle '
-        f'cx="{cx - 2}" cy="{pupil_y - 2}" r="2" fill="{CREAM}"/>'
+        rim + f'<g class="pupil" data-cx="{cx}" data-cy="{pupil_y}"><circle cx="{cx}" cy="{pupil_y}" r="7.5" '
+        f'fill="{BLACK}"/><circle cx="{cx - 2}" cy="{pupil_y - 2}" r="2" fill="{CREAM}"/></g>'
     )
     if kind == "sleepy":  # Kora, Jala: heavy lids
         eye += (
@@ -239,7 +240,7 @@ def _svg(body: str, label: str) -> str:
 
 def mask_svg(demon: str) -> str:
     look = LOOKS[demon]
-    return _svg(_crown(look) + _face(look), f"{demon} Sanniya mask")
+    return _svg(f'<g class="crown">{_crown(look)}</g>' + _face(look), f"{demon} Sanniya mask")
 
 
 def kola_svg() -> str:
@@ -260,4 +261,4 @@ def kola_svg() -> str:
         )
     kola = Look(face=GREEN, crown=RED, crown_kind="none", mouth="tusks")
     face = f'<g transform="translate(100 128) scale(0.8) translate(-100 -128)">{_face(kola)}</g>'
-    return _svg("".join(ring) + face, "Kola Sanniya mask")
+    return _svg(f'<g class="ring">{"".join(ring)}</g>' + face, "Kola Sanniya mask")
