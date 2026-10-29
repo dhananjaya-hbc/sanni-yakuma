@@ -83,18 +83,72 @@ footer { padding: clamp(40px, 8vh, 100px) 22px clamp(50px, 10vh, 120px); color: 
 footer h2 { color: var(--cream); font-size: 1.3rem; }
 footer ul { padding-left: 1.2em; }
 
+/* The opening stage: Kola Sanniya presides between two torches, embers rising. */
+header.stage { padding-top: clamp(24px, 6vh, 70px); }
+.stage-set { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: clamp(8px, 4vw, 56px); margin: 0 auto 8px; }
+.stage-set .hero-mask svg { width: min(340px, 58vw); height: auto; display: block; filter: drop-shadow(0 18px 50px rgba(179,38,30,.5)); }
+.torch { width: clamp(34px, 6vw, 60px); height: auto; overflow: visible; }
+.torch .flame-outer, .torch .flame-inner { transform-box: fill-box; transform-origin: 50% 100%; }
+.torch .flame-outer { animation: flame 1.3s ease-in-out infinite alternate; filter: drop-shadow(0 0 14px rgba(226,113,29,.9)); }
+.torch .flame-inner { animation: flame .8s ease-in-out infinite alternate-reverse; }
+@keyframes flame {
+  0% { transform: scale(1, 1) skewX(0); } 50% { transform: scale(.93, 1.09) skewX(-3deg); } 100% { transform: scale(1.05, .94) skewX(2deg); }
+}
+.embers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.ember { position: absolute; bottom: 10%; width: 3px; height: 3px; border-radius: 50%; background: #f6c453;
+  box-shadow: 0 0 6px 2px rgba(226,113,29,.8); opacity: 0; animation: rise linear infinite; }
+@keyframes rise {
+  0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; }
+  100% { transform: translate(var(--drift), -60vh); opacity: 0; }
+}
+
+/* Sending a demon away: the mask turns to smoke and leaves the stage. */
+.banish { margin-top: 14px; font: 1rem var(--serif); color: var(--night); background: var(--gold); border: 0; border-radius: 999px;
+  padding: 9px 20px; cursor: pointer; box-shadow: 0 0 0 0 rgba(224,165,38,.6); animation: call 2.4s infinite; }
+.banish:hover { background: #f6c453; }
+.banish:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+.banish[disabled] { background: #2d4a33; color: #9fd39a; cursor: default; animation: none; }
+@keyframes call { 0% { box-shadow: 0 0 0 0 rgba(224,165,38,.5); } 70%, 100% { box-shadow: 0 0 0 14px rgba(224,165,38,0); } }
+.no-js .banish, .no-js .remaining { display: none; }
+.demon .mask { position: relative; }
+.demon.banished .mask svg { animation: depart 1.8s ease-in forwards; }
+@keyframes depart {
+  0% { transform: none; filter: none; opacity: 1; }
+  25% { transform: translateY(-8px) rotate(-5deg); }
+  100% { transform: translate(40px, -110px) rotate(14deg) scale(.55); filter: blur(7px) grayscale(1); opacity: 0; }
+}
+.puff { position: absolute; left: 50%; top: 45%; width: 70px; height: 70px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(225,214,195,.6), rgba(225,214,195,0) 70%); animation: puff 1.9s ease-out forwards; }
+@keyframes puff {
+  from { transform: translate(-50%, -50%) scale(.3); opacity: .95; }
+  to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(2.6); opacity: 0; }
+}
+.demon.banished .mask::after { content: attr(data-gone); position: absolute; left: 0; right: 0; top: 40%; text-align: center;
+  color: var(--dim); font-style: italic; opacity: 0; animation: appear 1s 1.5s forwards; }
+@keyframes appear { to { opacity: 1; } }
+.demon.banished .exorcism { border-color: #4f8a5a; box-shadow: 0 0 34px rgba(159,211,154,.22); transition: box-shadow 1s, border-color 1s; }
+.remaining { color: var(--gold); margin-top: 1em; }
+.all-gone #kola .mask svg { filter: drop-shadow(0 12px 60px rgba(224,165,38,.6)); transition: filter 2s; }
+
+/* Long code and paths must wrap, never widen the page on a phone. */
+.evidence li, .lamp p, .exorcism li, .exorcism p { overflow-wrap: anywhere; }
+
 /* Demons walk on as you scroll (only when JS runs). */
 .js .reveal { opacity: 0; transform: translateY(40px); transition: opacity 1s ease, transform 1s ease; }
 .js .reveal.seen { opacity: 1; transform: none; }
 
 @media (max-width: 680px) {
-  .demon { grid-template-columns: 1fr; gap: 12px; }
+  .demon { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .demon .mask svg { width: 170px; }
 }
 @media (prefers-reduced-motion: reduce) {
   body::before, body::after { animation: none; }
   .js .reveal { opacity: 1; transform: none; transition: none; }
   .lamp .flame { transition: none; }
+  .torch .flame-outer, .torch .flame-inner, .ember, .banish { animation: none; }
+  .ember { display: none; }
+  .demon.banished .mask svg { animation: none; opacity: .15; }
+  .puff { display: none; }
 }
 </style>
 </head>
@@ -102,6 +156,24 @@ footer ul { padding-left: 1.2em; }
 <script>document.body.classList.remove("no-js"); document.documentElement.classList.add("js");</script>
 
 <header class="stage">
+  <div class="stage-set">
+    <div class="embers" aria-hidden="true">
+      {% for i in range(16) %}<span class="ember" style="left: {{ 8 + (i * 37) % 84 }}%; --drift: {{ ((i * 23) % 60) - 30 }}px; animation-duration: {{ 5 + (i % 5) }}s; animation-delay: -{{ (i * 0.9) % 7 }}s"></span>{% endfor %}
+    </div>
+    <svg class="torch" viewBox="0 0 60 230" aria-hidden="true">
+        <g class="flame-outer"><path d="M30,6 C46,34 52,56 43,76 C38,87 22,87 17,76 C8,56 14,34 30,6 Z" fill="#e2711d"/></g>
+        <g class="flame-inner"><path d="M30,30 C39,46 41,60 36,72 C33,78 27,78 24,72 C19,60 21,46 30,30 Z" fill="#f6c453"/></g>
+        <path d="M14,80 L46,80 L41,97 L19,97 Z" fill="#6b3a1f" stroke="#1d1a17" stroke-width="2"/>
+        <rect x="26" y="97" width="8" height="128" fill="#5a3418" stroke="#1d1a17" stroke-width="2"/>
+      </svg>
+    <div class="hero-mask sway">{{ kola_mask }}</div>
+    <svg class="torch" viewBox="0 0 60 230" aria-hidden="true">
+        <g class="flame-outer"><path d="M30,6 C46,34 52,56 43,76 C38,87 22,87 17,76 C8,56 14,34 30,6 Z" fill="#e2711d"/></g>
+        <g class="flame-inner"><path d="M30,30 C39,46 41,60 36,72 C33,78 27,78 24,72 C19,60 21,46 30,30 Z" fill="#f6c453"/></g>
+        <path d="M14,80 L46,80 L41,97 L19,97 Z" fill="#6b3a1f" stroke="#1d1a17" stroke-width="2"/>
+        <rect x="26" y="97" width="8" height="128" fill="#5a3418" stroke="#1d1a17" stroke-width="2"/>
+      </svg>
+  </div>
   <p class="kicker">Sanni Yakuma · an exorcism for code</p>
   <h1>{{ r.repo }}</h1>
   <p class="lede">
@@ -154,10 +226,11 @@ footer ul { padding-left: 1.2em; }
       One by one, each demon steps into the torchlight, boasts of what it has done, is mocked,
       and agrees to leave. Every claim below rests on evidence found in the code itself.
     </p>
+    {% if demons %}<p class="remaining" aria-live="polite" data-count="{{ demons | length }}">{{ demons | length }} {{ "demon remains" if demons | length == 1 else "demons remain" }}. Read each cure, then send the demon away.</p>{% endif %}
 
     {% for d in demons %}
     <article class="demon reveal" id="{{ d.p.demon | lower | replace(' ', '-') }}">
-      <div class="mask">{{ d.mask }}</div>
+      <div class="mask" data-gone="{{ d.p.demon }} has left the patient."><div class="sway" style="animation-delay: -{{ loop.index * 1.3 }}s">{{ d.mask }}</div></div>
       <div class="body">
         <h3>{{ d.p.demon }} Sanniya</h3>
         <p class="illness">brings {{ d.info.illness }} · in code: <em>{{ d.info.sickness }}</em></p>
@@ -197,6 +270,7 @@ footer ul { padding-left: 1.2em; }
           {% if d.diff %}
           <pre class="diff">{% for kind, line in d.diff %}<span class="{{ kind }}">{{ line }}</span>{% endfor %}</pre>
           {% endif %}
+          <button class="banish" type="button">Send {{ d.p.demon }} away</button>
         </div>
       </div>
     </article>
@@ -220,7 +294,7 @@ footer ul { padding-left: 1.2em; }
 
   <section id="kola" class="reveal">
     <p class="kicker">Kola Sanniya</p>
-    <div class="mask">{{ kola_mask }}</div>
+    <div class="mask sway">{{ kola_mask }}</div>
     <h2>The leader of the demons</h2>
     <p class="root">{{ r.kola_sanniya.root_cause | ticks }}</p>
     <p class="explanation">{{ r.kola_sanniya.explanation | ticks }}</p>
@@ -285,6 +359,43 @@ footer ul { padding-left: 1.2em; }
   }, { threshold: 0.15 });
   items.forEach(function (el) { io.observe(el); });
 })();
+
+/* Send a demon away: smoke, departure, and one fewer demon on the stage. */
+(function () {
+  var remaining = document.querySelector(".remaining");
+  var count = remaining ? parseInt(remaining.getAttribute("data-count"), 10) : 0;
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.querySelectorAll(".banish").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var card = button.closest(".demon");
+      if (card.classList.contains("banished")) return;
+      card.classList.add("banished");
+      var name = card.querySelector("h3").textContent.replace(" Sanniya", "");
+      button.textContent = name + " has been sent away";
+      button.disabled = true;
+      if (!still) {
+        var mask = card.querySelector(".mask");
+        for (var i = 0; i < 6; i++) {
+          var puff = document.createElement("span");
+          puff.className = "puff";
+          puff.style.setProperty("--dx", (Math.random() * 120 - 50).toFixed(0) + "px");
+          puff.style.setProperty("--dy", (-40 - Math.random() * 90).toFixed(0) + "px");
+          puff.style.animationDelay = (i * 0.12).toFixed(2) + "s";
+          mask.appendChild(puff);
+        }
+      }
+      if (remaining) {
+        count -= 1;
+        remaining.textContent = count === 0
+          ? "Every demon has left the patient. Only their leader remains."
+          : count + (count === 1 ? " demon remains." : " demons remain.") + " Read each cure, then send the demon away.";
+        if (count === 0) document.body.classList.add("all-gone");
+      }
+    });
+  });
+})();
+
+{% include "_living.js" %}
 </script>
 </body>
 </html>
