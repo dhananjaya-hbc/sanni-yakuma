@@ -9,16 +9,55 @@ from pathlib import Path
 MAX_TEXT_BYTES = 1_000_000
 
 SOURCE_EXTS = {
-    ".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".go", ".java", ".kt",
-    ".rb", ".php", ".rs", ".c", ".h", ".cc", ".cpp", ".hpp", ".cs", ".swift",
-    ".scala", ".dart", ".lua", ".sh", ".vue", ".svelte",
+    ".py",
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".mjs",
+    ".cjs",
+    ".go",
+    ".java",
+    ".kt",
+    ".rb",
+    ".php",
+    ".rs",
+    ".c",
+    ".h",
+    ".cc",
+    ".cpp",
+    ".hpp",
+    ".cs",
+    ".swift",
+    ".scala",
+    ".dart",
+    ".lua",
+    ".sh",
+    ".vue",
+    ".svelte",
 }
 
 # Directories that hold third-party or generated code, not the author's own.
 VENDOR_DIRS = {
-    "node_modules", "vendor", "vendors", "third_party", "thirdparty", "third-party", "3rdparty",
-    "external", "externals", "extern", "deps", "bower_components",
-    "dist", "build", ".venv", "venv", "site-packages", "__pycache__", ".git",
+    "node_modules",
+    "vendor",
+    "vendors",
+    "third_party",
+    "thirdparty",
+    "third-party",
+    "3rdparty",
+    "external",
+    "externals",
+    "extern",
+    "deps",
+    "bower_components",
+    "dist",
+    "build",
+    ".venv",
+    "venv",
+    "site-packages",
+    "__pycache__",
+    ".git",
 }
 
 # Header lines that mark a file as machine-written.
@@ -53,7 +92,9 @@ class Repo:
         """Output of a git command, or None if it fails (e.g. not a git repo)."""
         result = subprocess.run(
             ["git", "-C", str(self.root), *args],
-            capture_output=True, text=True, check=False,
+            capture_output=True,
+            text=True,
+            check=False,
         )
         return result.stdout if result.returncode == 0 else None
 
@@ -77,7 +118,8 @@ class Repo:
     def source_files(self) -> list[str]:
         """The author's own source code: no vendored, generated or test files."""
         return [
-            f for f in self.files
+            f
+            for f in self.files
             if Path(f).suffix.lower() in SOURCE_EXTS
             and not self.is_vendored(f)
             and not is_test_path(f)
@@ -96,10 +138,9 @@ class Repo:
     @cached_property
     def test_files(self) -> list[str]:
         return [
-            f for f in self.files
-            if Path(f).suffix.lower() in SOURCE_EXTS
-            and not self.is_vendored(f)
-            and is_test_path(f)
+            f
+            for f in self.files
+            if Path(f).suffix.lower() in SOURCE_EXTS and not self.is_vendored(f) and is_test_path(f)
         ]
 
     @staticmethod
