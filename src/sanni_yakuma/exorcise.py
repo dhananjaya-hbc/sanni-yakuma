@@ -6,6 +6,7 @@ import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 
+import json_repair
 from pydantic import ValidationError
 
 from . import llm
@@ -25,12 +26,20 @@ class DiagnosisError(RuntimeError):
 
 
 def extract_json(text: str) -> dict:
-    """The JSON object in Gemma's reply, tolerating fences or a sentence around it."""
+    """The JSON object in Gemma's reply, tolerating fences, a sentence around it, and the
+    usual model slips inside long code strings (raw newlines, unescaped quotes)."""
     text = FENCE_RE.sub("", text.strip())
     start, end = text.find("{"), text.rfind("}")
     if start == -1 or end <= start:
         raise ValueError("no JSON object in the reply")
-    return json.loads(text[start : end + 1])
+    body = text[start : end + 1]
+    try:
+        return json.loads(body, strict=False)
+    except json.JSONDecodeError:
+        repaired = json_repair.loads(body)
+    if not isinstance(repaired, dict) or not repaired:
+        raise ValueError("the reply could not be repaired into a JSON object")
+    return repaired
 
 
 def ask(generate: Callable[..., str], prompt: str, model: str | None, sleep: Callable[[float], None]) -> str:
