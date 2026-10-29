@@ -237,6 +237,11 @@ def test_pissu_paths_and_hosts(make_repo):
     assert omen.metrics["hardcoded_paths"] == 1 and omen.metrics["local_hosts"] == 2 and omen.found
 
 
+def test_pissu_skips_docstrings(make_repo):
+    code = '"""The 18 Sanni demons, and 42 more words."""\n\ndef f():\n    """\n    Waits 37 seconds.\n    """\n    return 1\n'
+    assert pissu.detect(make_repo({"a.py": code})).metrics["magic_lines"] == 0
+
+
 def test_pissu_magic_numbers_skip_constants(make_repo):
     assert pissu.magic_numbers("    price = cost * 1.0725 + 37") == ["1.0725", "37"]
     assert pissu.magic_numbers("TAX_RATE = 1.0725") == []
