@@ -4,7 +4,7 @@ from sanni_yakuma.demons import DEMONS
 from sanni_yakuma.diagnosis import Blessing, Exorcism, KolaVerdict, Possession, Ritual
 from sanni_yakuma.masks import kola_svg, mask_svg
 from sanni_yakuma.omen import Evidence, Omen
-from sanni_yakuma.render import render, ticks
+from sanni_yakuma.render import render, ticks, write_gallery
 
 
 def test_every_demon_has_a_valid_mask():
@@ -63,3 +63,12 @@ def test_gemma_text_cannot_inject_html():
 def test_page_without_demons():
     page = render(ritual(possessions=[], spared=[]))
     assert "No demon could be proven" in page and 'id="spared"' not in page
+
+
+def test_gallery_links_every_ritual(tmp_path):
+    rituals = [ritual(), ritual(repo="demo/well", url="https://github.com/demo/well", possessions=[], spared=[])]
+    index = write_gallery(rituals, tmp_path)
+    html = index.read_text()
+    assert 'href="demo-app.html"' in html and 'href="demo-well.html"' in html
+    assert (tmp_path / "demo-app.html").exists() and (tmp_path / ".nojekyll").exists()
+    assert html.index("demo/app") < html.index("demo/well")  # most possessed first
