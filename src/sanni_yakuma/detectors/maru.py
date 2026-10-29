@@ -20,7 +20,7 @@ def comment_body(line: str, marker: str) -> str | None:
     stripped = line.strip()
     if not stripped.startswith(marker):
         return None
-    body = stripped[len(marker):]
+    body = stripped[len(marker) :]
     return body[1:] if body.startswith(" ") else body
 
 
@@ -56,9 +56,18 @@ def detect(repo: Repo) -> Omen:
     found.sort(key=lambda b: b[2], reverse=True)
     sev = max(severity(len(found), mild=2, clear=6, severe=15), severity(dead_lines, mild=10, clear=50, severe=150))
     return Omen(
-        demon="Maru", sickness="dead code", found=sev > 0, severity_hint=sev,
-        summary=f"{dead_lines} lines of commented-out code in {len(found)} blocks." if found else "No corpses in the comments.",
+        demon="Maru",
+        sickness="dead code",
+        found=sev > 0,
+        severity_hint=sev,
+        summary=f"{dead_lines} lines of commented-out code in {len(found)} blocks."
+        if found
+        else "No corpses in the comments.",
         metrics={"blocks": len(found), "dead_lines": dead_lines},
-        evidence=[Evidence(path=p, line=start, snippet=snippet(first), note=f"{length} commented-out lines")
-                  for p, start, length, first in found[:MAX_EVIDENCE]] if sev else [],
+        evidence=[
+            Evidence(path=p, line=start, snippet=snippet(first), note=f"{length} commented-out lines")
+            for p, start, length, first in found[:MAX_EVIDENCE]
+        ]
+        if sev
+        else [],
     )
