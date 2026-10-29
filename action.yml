@@ -1,0 +1,63 @@
+name: Sanni Yakuma
+description: An AI exorcism for your code, after the Sanni Yakuma healing ritual of Sri Lanka. Finds code sicknesses with plain detectors, then Gemma names the demons and their cures.
+author: Chamod Dhananjaya
+branding:
+  icon: eye
+  color: red
+
+inputs:
+  gemini-api-key:
+    description: Google AI Studio API key for hosted Gemma.
+    required: true
+  model:
+    description: Gemma model to use.
+    default: gemma-4-26b-a4b-it
+  comment:
+    description: Post (or update) a comment on the pull request.
+    default: "true"
+  github-token:
+    description: Token used to comment on the pull request.
+    default: ${{ github.token }}
+
+outputs:
+  page:
+    description: Path to the ritual HTML page.
+    value: ${{ steps.ritual.outputs.page }}
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@v6
+
+    - name: Perform the ritual
+      id: ritual
+      shell: bash
+      env:
+        GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
+        MODEL_NAME: ${{ inputs.model }}
+      run: |
+        out="$RUNNER_TEMP/sanni-yakuma"
+        name="${GITHUB_REPOSITORY/\//-}"
+        uv run --project "$GITHUB_ACTION_PATH" sanni exorcise "$GITHUB_WORKSPACE" \
+          --url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" --out "$out" --markdown
+        echo "page=$out/$name.html" >> "$GITHUB_OUTPUT"
+        echo "comment=$out/$name.md" >> "$GITHUB_OUTPUT"
+        cat "$out/$name.md" >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Keep the ritual page
+      uses: actions/upload-artifact@v4
+      with:
+        name: sanni-yakuma
+        path: ${{ runner.temp }}/sanni-yakuma
+
+    - name: Comment on the pull request
+      if: inputs.comment == 'true' && github.event_name == 'pull_request'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PR: ${{ github.event.pull_request.number }}
+        BODY: ${{ steps.ritual.outputs.comment }}
+      run: |
+        # Update our earlier comment if there is one, so the PR is not flooded.
+        gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file "$BODY" --edit-last 2>/dev/null \
+          || gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file "$BODY"
