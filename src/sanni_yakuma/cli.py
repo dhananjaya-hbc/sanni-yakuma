@@ -1,4 +1,4 @@
-"""Command line: `sanni omens`, `sanni exorcise`, `sanni render` and `sanni ping`."""
+"""Command line: `sanni omens`, `sanni exorcise`, `sanni render`, `sanni gallery` and `sanni ping`."""
 
 import argparse
 import json
@@ -15,7 +15,8 @@ from .detectors import read_omens
 from .diagnosis import Ritual
 from .exorcise import DiagnosisError, diagnose
 from .llm import LLMError, generate
-from .render import write_page
+from .markdown import comment
+from .render import write_gallery, write_page
 from .summon import parse_github, summon
 
 console = Console()
@@ -63,9 +64,11 @@ def repo_name(target: str) -> str:
 
 
 def cmd_exorcise(args: argparse.Namespace) -> int:
-    name = repo_name(args.target)
+    name = repo_name(args.url or args.target)
     try:
         with summon(args.target) as repo:
+            if args.url:  # a local checkout of a GitHub repo (e.g. in the GitHub Action)
+                repo.url = args.url
             with console.status(f"Reading the omens of {name} ..."):
                 omens = read_omens(repo)
             with console.status(f"Gemma is diagnosing {name} ..."):
@@ -101,6 +104,10 @@ def cmd_exorcise(args: argparse.Namespace) -> int:
     console.print(f"\n{k.verse_sinhala}\n[dim]{k.verse_transliteration}[/]\n[italic]{k.verse_english}[/]", highlight=False)
     page = write_page(ritual, out.with_suffix(".html"))
     console.print(f"\nSaved {out} and {page}")
+    if args.markdown:
+        md = out.with_suffix(".md")
+        md.write_text(comment(ritual), encoding="utf-8")
+        console.print(f"Saved {md}")
     return 0
 
 
@@ -111,6 +118,13 @@ def cmd_render(args: argparse.Namespace) -> int:
         ritual = Ritual.model_validate_json(source.read_text(encoding="utf-8"))
         page = write_page(ritual, source.with_suffix(".html"))
         console.print(f"Rendered {page}")
+    return 0
+
+
+def cmd_gallery(args: argparse.Namespace) -> int:
+    rituals = [Ritual.model_validate_json(Path(name).read_text(encoding="utf-8")) for name in args.rituals]
+    index = write_gallery(rituals, Path(args.out))
+    console.print(f"Hall of Masks with {len(rituals)} rituals: {index}")
     return 0
 
 
@@ -140,11 +154,18 @@ def main(argv: list[str] | None = None) -> int:
     exorcise.add_argument("target", help="GitHub URL or local folder")
     exorcise.add_argument("--model", help="override MODEL_NAME, e.g. gemma-4-31b-it")
     exorcise.add_argument("--out", default="out", help="folder for the ritual JSON and page (default: out)")
+    exorcise.add_argument("--url", help="GitHub URL of a local checkout, for evidence links")
+    exorcise.add_argument("--markdown", action="store_true", help="also write a Markdown PR comment")
     exorcise.set_defaults(func=cmd_exorcise)
 
     render = sub.add_parser("render", help="re-render ritual pages from saved JSON (no AI)")
     render.add_argument("rituals", nargs="+", help="out/<repo>.json files")
     render.set_defaults(func=cmd_render)
+
+    gallery = sub.add_parser("gallery", help="build the Hall of Masks from saved rituals (no AI)")
+    gallery.add_argument("rituals", nargs="+", help="out/<repo>.json files")
+    gallery.add_argument("--out", default="docs", help="folder to write (default: docs, for GitHub Pages)")
+    gallery.set_defaults(func=cmd_gallery)
 
     ping = sub.add_parser("ping", help="check that Gemma answers")
     ping.add_argument("--model", help="override MODEL_NAME")
