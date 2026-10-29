@@ -140,3 +140,12 @@ def test_diff_applies_with_git(sick, tmp_path):
     diff = make_diff(repo, Patch(**GOOD_PATCH))
     (tmp_path / "fix.diff").write_text(diff)
     subprocess.run(["git", "-C", str(repo.root), "apply", "--check", str(tmp_path / "fix.diff")], check=True)
+
+
+def test_patch_that_breaks_python_is_dropped(sick):
+    from sanni_yakuma.diagnosis import Patch
+    from sanni_yakuma.patch import make_diff
+
+    repo, _, _ = sick
+    broken = Patch(path="app.py", find="    except:\n        pass", replace='    except OSError:\n        log("x" )"')
+    assert make_diff(repo, broken) is None
