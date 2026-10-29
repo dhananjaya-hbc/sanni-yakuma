@@ -51,7 +51,10 @@ def detect(repo: Repo) -> Omen:
         summary = "No license at all: by default, nobody may legally reuse this code."
         evidence = [Evidence(note="No LICENSE/COPYING file and no license field in package metadata")]
     return Omen(
-        demon="Pith", sickness="bitter legal trouble", found=sev > 0, severity_hint=sev,
+        demon="Pith",
+        sickness="bitter legal trouble",
+        found=sev > 0,
+        severity_hint=sev,
         summary=summary,
         metrics={"license_file": files[0] if files else None, "declared_license": declared},
         evidence=evidence,
