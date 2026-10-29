@@ -22,8 +22,14 @@ def detect(repo: Repo, now: datetime | None = None) -> Omen:
     open_issues = repo.meta.get("open_issues")
 
     if when is None:
-        return Omen(demon="Kora", sickness="paralysed repo", found=False, severity_hint=0,
-                    summary="No git history to judge.", metrics={"archived": archived})
+        return Omen(
+            demon="Kora",
+            sickness="paralysed repo",
+            found=False,
+            severity_hint=0,
+            summary="No git history to judge.",
+            metrics={"archived": archived},
+        )
 
     months = (now - when).days / 30.44
     sev = severity(months, mild=6, clear=12, severe=24)
@@ -36,9 +42,16 @@ def detect(repo: Repo, now: datetime | None = None) -> Omen:
     if sev and open_issues:
         evidence.append(Evidence(note=f"{open_issues} open issues and pull requests are waiting"))
     return Omen(
-        demon="Kora", sickness="paralysed repo", found=sev > 0, severity_hint=sev,
+        demon="Kora",
+        sickness="paralysed repo",
+        found=sev > 0,
+        severity_hint=sev,
         summary=f"Last commit {months:.0f} months ago" + (" (archived)." if archived else "."),
-        metrics={"last_commit": when.date().isoformat(), "months_since": round(months, 1),
-                 "archived": archived, "open_issues": open_issues},
+        metrics={
+            "last_commit": when.date().isoformat(),
+            "months_since": round(months, 1),
+            "archived": archived,
+            "open_issues": open_issues,
+        },
         evidence=evidence,
     )
