@@ -53,16 +53,17 @@ def ask(generate: Callable[..., str], prompt: str, model: str | None, sleep: Cal
     raise AssertionError("unreachable")
 
 
-def answer(generate: Callable[..., str], prompt: str, model: str | None,
-           sleep: Callable[[float], None]) -> GemmaAnswer:
+def answer(generate: Callable[..., str], prompt: str, model: str | None, sleep: Callable[[float], None]) -> GemmaAnswer:
     """Ask Gemma; if the JSON is broken or the wrong shape, ask once more with the error."""
     reply = ask(generate, prompt, model, sleep)
     try:
         return GemmaAnswer.model_validate(extract_json(reply))
     except (ValueError, ValidationError) as exc:
         problem = str(exc)[:1500]
-    retry = (f"{prompt}\n\n# Your previous answer could not be used\n{problem}\n"
-             "Answer again with ONE valid JSON object in the exact shape above, and nothing else.")
+    retry = (
+        f"{prompt}\n\n# Your previous answer could not be used\n{problem}\n"
+        "Answer again with ONE valid JSON object in the exact shape above, and nothing else."
+    )
     reply = ask(generate, retry, model, sleep)
     try:
         return GemmaAnswer.model_validate(extract_json(reply))
@@ -107,9 +108,14 @@ def build_diffs(repo: Repo, possessions: list[Possession]) -> tuple[list[Possess
     return built, rejected
 
 
-def diagnose(repo: Repo, omens: list[Omen], name: str, model: str | None = None,
-             generate: Callable[..., str] = llm.generate,
-             sleep: Callable[[float], None] = time.sleep) -> Ritual:
+def diagnose(
+    repo: Repo,
+    omens: list[Omen],
+    name: str,
+    model: str | None = None,
+    generate: Callable[..., str] = llm.generate,
+    sleep: Callable[[float], None] = time.sleep,
+) -> Ritual:
     prompt, index = build_prompt(repo, omens, name)
     ans = answer(generate, prompt, model, sleep)
     possessions, rejected = keep_honest(ans, omens, index)
