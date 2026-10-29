@@ -20,24 +20,46 @@ def test_ticks_escapes_before_marking_code():
 
 def ritual(**overrides) -> Ritual:
     omens = [
-        Omen(demon="Bihiri", sickness="swallowed errors", found=True, severity_hint=2, summary="1 swallowed",
-             evidence=[Evidence(path="src/app.py", line=4, snippet="except:", note="bare except")]),
+        Omen(
+            demon="Bihiri",
+            sickness="swallowed errors",
+            found=True,
+            severity_hint=2,
+            summary="1 swallowed",
+            evidence=[Evidence(path="src/app.py", line=4, snippet="except:", note="bare except")],
+        ),
         Omen(demon="Golu", sickness="silent repo", found=True, severity_hint=2, summary="README has 3 words."),
         Omen(demon="Naga", sickness="security nightmares", found=False, severity_hint=0, summary="No secrets found."),
     ]
     data = dict(
-        repo="demo/app", url="https://github.com/demo/app", commit="abc1234def", model="gemma-test",
-        performed_at="2026-10-29T10:00:00+00:00", omens=omens,
+        repo="demo/app",
+        url="https://github.com/demo/app",
+        commit="abc1234def",
+        model="gemma-test",
+        performed_at="2026-10-29T10:00:00+00:00",
+        omens=omens,
         blessings=[Blessing(title="Small and clear", detail="Only `app.py`.")],
-        possessions=[Possession(
-            demon="Bihiri", severity=2, evidence_ids=["E1"],
-            monologue="I swallowed it <script>alert(1)</script> in `app.py`.",
-            exorcism=Exorcism(summary="Catch it by name.", steps=["Edit `app.py`."],
-                              diff="--- a/src/app.py\n+++ b/src/app.py\n@@ -4,1 +4,1 @@\n-except:\n+except OSError:\n"),
-        )],
+        possessions=[
+            Possession(
+                demon="Bihiri",
+                severity=2,
+                evidence_ids=["E1"],
+                monologue="I swallowed it <script>alert(1)</script> in `app.py`.",
+                exorcism=Exorcism(
+                    summary="Catch it by name.",
+                    steps=["Edit `app.py`."],
+                    diff="--- a/src/app.py\n+++ b/src/app.py\n@@ -4,1 +4,1 @@\n-except:\n+except OSError:\n",
+                ),
+            )
+        ],
         spared=["Golu"],
-        kola_sanniya=KolaVerdict(root_cause="Haste", explanation="Built in a hurry.", verse_sinhala="සුබ වේවා",
-                                 verse_transliteration="suba vēvā", verse_english="May it be well"),
+        kola_sanniya=KolaVerdict(
+            root_cause="Haste",
+            explanation="Built in a hurry.",
+            verse_sinhala="සුබ වේවා",
+            verse_transliteration="suba vēvā",
+            verse_english="May it be well",
+        ),
     )
     data.update(overrides)
     return Ritual(**data)
