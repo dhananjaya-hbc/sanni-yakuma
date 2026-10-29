@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sanni Yakuma · jquery-archive/jquery-mobile</title>
+<meta name="description" content="An exorcism for the code of jquery-archive/jquery-mobile, after the Sanni Yakuma healing ritual of southern Sri Lanka.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Shared by the ritual page and the Hall of Masks. */
+:root {
+  --night: #0d0907; --wood: #1c130e; --ember: #e2711d; --gold: #e0a526; --red: #b3261e;
+  --leaf: #3f7d3a; --cream: #efe3cc; --dim: #a8987f; --line: #3a2a1f;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sinhala: "Noto Sans Sinhala", "Sinhala Sangam MN", "Iskoola Pota", sans-serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--night); }
+body {
+  margin: 0; color: var(--cream); font: 18px/1.65 var(--serif);
+  background: radial-gradient(ellipse at 50% 0%, #2a1a10 0%, var(--night) 55%) fixed;
+}
+/* Torch light from both sides of the stage. */
+body::before, body::after {
+  content: ""; position: fixed; top: -10vh; width: 60vw; height: min(80vh, 800px); pointer-events: none; z-index: 0;
+  background: radial-gradient(circle, rgba(226,113,29,.20) 0%, rgba(226,113,29,0) 65%);
+  animation: flicker 3.7s infinite;
+}
+body::before { left: -25vw; }
+body::after { right: -25vw; animation-duration: 4.3s; animation-delay: -1.2s; }
+@keyframes flicker {
+  0%, 100% { opacity: .85; } 12% { opacity: 1; } 20% { opacity: .7; } 34% { opacity: .95; }
+  52% { opacity: .78; } 68% { opacity: 1; } 81% { opacity: .82; }
+}
+main, header, footer { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 22px; }
+a { color: var(--gold); }
+code { font: .86em var(--mono); background: #2a1d15; padding: .1em .35em; border-radius: 4px; color: #f6d79a; }
+h1, h2, h3, h4 { font-weight: normal; line-height: 1.2; }
+.kicker { font-variant: small-caps; letter-spacing: .14em; color: var(--ember); font-size: .95rem; margin: 0; }
+/* Opening */
+header.stage { text-align: center; padding-top: clamp(48px, 12vh, 140px); padding-bottom: clamp(24px, 6vh, 70px); }
+header.stage h1 { font-size: clamp(2.2rem, 6vw, 4rem); margin: .3em 0 .2em; word-break: break-word; }
+header.stage .lede { font-size: 1.15rem; color: var(--dim); max-width: 36em; margin: 0 auto 1.5em; }
+.meta { font-size: .9rem; color: var(--dim); }
+.meta span + span::before { content: " · "; }
+.tally { margin-top: 2.2em; font-size: 1.1rem; }
+.tally strong { color: var(--gold); font-weight: normal; font-size: 1.6rem; }
+
+section { padding: clamp(40px, 9vh, 110px) 0 clamp(20px, 4vh, 50px); }
+section > h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin: .2em 0 .4em; }
+section > .intro { color: var(--dim); max-width: 40em; }
+
+/* Ata Paliya: blessings as oil lamps */
+.lamps { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+.lamp { background: var(--wood); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px 18px; }
+.lamp svg { width: 54px; height: 54px; display: block; }
+.lamp .flame { fill: #4a3626; transition: fill 1.2s, filter 1.2s; }
+.lamp.lit .flame, .no-js .lamp .flame { fill: var(--gold); filter: drop-shadow(0 0 8px var(--ember)); }
+.lamp h3 { font-size: 1.1rem; margin: .4em 0 .2em; color: var(--gold); }
+.lamp p { margin: 0; font-size: .95rem; color: var(--cream); }
+
+/* Daha Ata Sanniya: the demons */
+.demon { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; padding: clamp(32px, 7vh, 90px) 0; border-top: 1px solid var(--line); }
+.demon .body { min-width: 0; }
+.demon .mask svg { width: 100%; height: auto; filter: drop-shadow(0 10px 24px rgba(226,113,29,.25)); }
+.demon h3 { font-size: 2rem; margin: 0; }
+.demon .illness { color: var(--dim); margin: .2em 0 .6em; }
+.flames { display: flex; gap: 4px; align-items: center; margin-bottom: 1em; font-size: .9rem; color: var(--dim); }
+.flames svg { width: 16px; height: 21px; fill: var(--ember); }
+.flames svg.off { fill: #3a2a1f; }
+.flames span { margin-left: 8px; font-variant: small-caps; letter-spacing: .08em; }
+blockquote.monologue {
+  margin: 0 0 1.2em; padding: .2em 0 .2em 1em; border-left: 3px solid var(--red);
+  font-style: italic; font-size: 1.12rem;
+}
+details { margin: 0 0 1.2em; }
+summary { cursor: pointer; color: var(--gold); }
+.evidence { list-style: none; padding: 0; margin: .6em 0 0; font-size: .92rem; }
+.evidence li { padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.evidence .eid { color: var(--dim); font: .8em var(--mono); margin-right: .5em; }
+.evidence .note { color: var(--dim); }
+.exorcism { background: #13261a; border: 1px solid #2d4a33; border-radius: 10px; padding: 14px 18px; }
+.exorcism h4 { margin: 0 0 .3em; color: #9fd39a; font-variant: small-caps; letter-spacing: .1em; font-size: 1rem; }
+.exorcism p { margin: 0 0 .5em; }
+.exorcism ol { margin: 0 0 .5em; padding-left: 1.3em; }
+pre.diff { margin: .8em 0 0; padding: 12px; overflow-x: auto; background: #0b0f0b; border-radius: 6px; font: 13px/1.5 var(--mono); }
+pre.diff .add { color: #8fdc8a; } pre.diff .del { color: #ef8a80; }
+pre.diff .hunk { color: #7aa6d6; } pre.diff .file { color: var(--dim); } pre.diff .ctx { color: #c9bda8; }
+pre.diff span { display: block; white-space: pre; }
+.none { color: var(--dim); font-style: italic; }
+
+/* The spared */
+.spared { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; list-style: none; padding: 0; }
+.spared li { display: flex; gap: 10px; align-items: center; font-size: .88rem; color: var(--dim); }
+.spared svg { width: 56px; flex: none; opacity: .75; }
+.spared strong { color: var(--cream); font-weight: normal; display: block; }
+
+/* Kola Sanniya */
+#kola { text-align: center; }
+#kola .mask svg { width: min(360px, 80vw); height: auto; filter: drop-shadow(0 12px 40px rgba(179,38,30,.45)); }
+#kola .root { font-size: 1.35rem; max-width: 30em; margin: .6em auto; color: var(--gold); }
+#kola .explanation { max-width: 36em; margin: 0 auto; color: var(--cream); }
+.verse { margin: 3em auto 0; max-width: 34em; padding: 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.verse .si { font: 1.5rem/1.8 var(--sinhala); margin: 0; white-space: pre-line; }
+.verse .tr { color: var(--dim); font-style: italic; margin: .8em 0 .3em; white-space: pre-line; }
+.verse .en { margin: 0; white-space: pre-line; }
+
+footer { padding: clamp(40px, 8vh, 100px) 22px clamp(50px, 10vh, 120px); color: var(--dim); font-size: .92rem; border-top: 1px solid var(--line); margin-top: 6vh; }
+footer h2 { color: var(--cream); font-size: 1.3rem; }
+footer ul { padding-left: 1.2em; }
+
+/* Demons walk on as you scroll (only when JS runs). */
+.js .reveal { opacity: 0; transform: translateY(40px); transition: opacity 1s ease, transform 1s ease; }
+.js .reveal.seen { opacity: 1; transform: none; }
+
+@media (max-width: 680px) {
+  .demon { grid-template-columns: 1fr; gap: 12px; }
+  .demon .mask svg { width: 170px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+  .lamp .flame { transition: none; }
+}
+</style>
+</head>
+<body class="no-js">
+<script>document.body.classList.remove("no-js"); document.documentElement.classList.add("js");</script>
+
+<header class="stage">
+  <p class="kicker">Sanni Yakuma · an exorcism for code</p>
+  <h1>jquery-archive/jquery-mobile</h1>
+  <p class="lede">
+    In the healing ritual of southern Sri Lanka, masked dancers call out the eighteen Sanni demons,
+    each the cause of an illness, mock them, and send them away. Tonight the patient is a codebase.
+  </p>
+  <p class="meta">
+<span><a href="https://github.com/jquery-archive/jquery-mobile">github.com/jquery-archive/jquery-mobile</a></span><span>commit <code>1c3a176</code></span>    <span>29 October 2026</span>
+    <span>diagnosed by gemma-4-26b-a4b-it</span>
+  </p>
+  <p class="tally">
+    <strong>8</strong> blessings ·
+    <strong>7</strong> of 18 demons found ·
+    <strong>11</strong> never came near
+  </p>
+</header>
+
+<main>
+  <section id="ata-paliya">
+    <p class="kicker">Ata Paliya</p>
+    <h2>First, the blessings</h2>
+    <p class="intro">
+      The ritual does not begin with demons. It begins with dances that bring blessings.
+      So here is what this repository already does well.
+    </p>
+    <ul class="lamps">
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>A robust testing suite</h3>
+        <p>155 test files provide coverage for 279 source files.</p>
+      </li>
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>Clear project status</h3>
+        <p>The README explicitly states that jQuery Mobile is not maintained anymore.</p>
+      </li>
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>Extensive documentation</h3>
+        <p>The README provides direct links to the API and interactive demos.</p>
+      </li>
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>Organized build system</h3>
+        <p>A Gruntfile.js and build/ directory manage the library&#39;s assets.</p>
+      </li>
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>Standardized environment</h3>
+        <p>A .editorconfig file is present to manage whitespace and settings.</p>
+      </li>
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>Clean version control</h3>
+        <p>A .gitignore file is used to keep the repository tidy.</p>
+      </li>
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>Contributor guidance</h3>
+        <p>CONTRIBUTING.md provides clear instructions for new developers.</p>
+      </li>
+      <li class="lamp reveal">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="flame" d="M30,6 Q40,20 31,31 Q21,21 30,6 Z"/>
+          <path d="M6,34 Q30,29 54,34 Q50,49 30,51 Q10,49 6,34 Z" fill="#8a4b2a" stroke="#1d1a17" stroke-width="2"/>
+        </svg>
+        <h3>Rich demo ecosystem</h3>
+        <p>The demos/ directory contains numerous examples for users.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section id="daha-ata-sanniya">
+    <p class="kicker">Daha Ata Sanniya</p>
+    <h2>The demons come out</h2>
+    <p class="intro">
+      One by one, each demon steps into the torchlight, boasts of what it has done, is mocked,
+      and agrees to leave. Every claim below rests on evidence found in the code itself.
+    </p>
+
+    <article class="demon reveal" id="abutha">
+      <div class="mask"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" role="img" aria-label="Abutha Sanniya mask"><title>Abutha Sanniya mask</title><path d="M28,76 Q25,63 40,37 Q55,63 52,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M48,76 Q45,58 60,32 Q75,58 72,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M68,76 Q65,53 80,27 Q95,53 92,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M88,76 Q85,48 100,22 Q115,48 112,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M108,76 Q105,53 120,27 Q135,53 132,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M128,76 Q125,58 140,32 Q155,58 152,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M148,76 Q145,63 160,37 Q175,63 172,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><ellipse cx="38" cy="128" rx="13" ry="23" fill="#e2711d" stroke="#1d1a17" stroke-width="4"/><ellipse cx="162" cy="128" rx="13" ry="23" fill="#e2711d" stroke="#1d1a17" stroke-width="4"/><ellipse cx="100" cy="132" rx="62" ry="74" fill="#e2711d" stroke="#1d1a17" stroke-width="5"/><ellipse cx="82" cy="100" rx="22" ry="12" fill="#ffffff" opacity="0.12"/><path d="M52,98 Q72,80 94,96" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M106,96 Q128,80 148,98" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="76" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="76" cy="108" r="7.5" fill="#1d1a17"/><circle cx="74" cy="106" r="2" fill="#f2e8d5"/><circle cx="124" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="124" cy="108" r="7.5" fill="#1d1a17"/><circle cx="122" cy="106" r="2" fill="#f2e8d5"/><path d="M92,128 Q88,150 100,152 Q112,150 108,128" fill="#e2711d" stroke="#1d1a17" stroke-width="4"/><path d="M60,164 Q100,158 140,164 Q132,204 100,206 Q68,204 60,164 Z" fill="#5a0f0b" stroke="#1d1a17" stroke-width="4"/><rect x="72" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="83" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="94" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="105" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="116" y="163" width="10" height="9" fill="#f2e8d5"/><path d="M66,166 L74,166 L69,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M126,166 L134,166 L131,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M100,88 m-2,0 a2,2 0 1,1 4,0 a5,5 0 1,1 -9,0 a8,8 0 1,1 15,0" fill="none" stroke="#1d1a17" stroke-width="3"/></svg></div>
+      <div class="body">
+        <h3>Abutha Sanniya</h3>
+        <p class="illness">brings madness not caused by spirits · in code: <em>self-made complexity</em></p>
+        <div class="flames" aria-label="severity 3 of 3">
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <span>severe</span>
+        </div>
+        <blockquote class="monologue">You struggle through my tangles. In <code>js/widgets/collapsible.js</code>, I spun a web of forty-three complexity levels and four layers of nesting. Even <code>js/widgets/forms/autogrow.js</code> cannot escape my six deep nests. Stop trying to untangle me and just rest.</blockquote>
+
+        <details>
+          <summary>The evidence (12)</summary>
+          <ul class="evidence">
+            <li>
+              <span class="eid">E1</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/widgets/collapsible.js#L31"><code>js/widgets/collapsible.js:31</code></a>
+<span class="note">`(anonymous)`: 210 lines, complexity 43, nesting 4</span>            </li>
+            <li>
+              <span class="eid">E2</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/widgets/listview.js#L148"><code>js/widgets/listview.js:148</code></a>
+<span class="note">`_refresh`: 68 lines, complexity 25, nesting 5</span>            </li>
+            <li>
+              <span class="eid">E3</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/widgets/forms/slider.js#L35"><code>js/widgets/forms/slider.js:35</code></a>
+<span class="note">`(anonymous)`: 117 lines, complexity 20, nesting 5</span>            </li>
+            <li>
+              <span class="eid">E4</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/widgets/table.columntoggle.popup.js#L176"><code>js/widgets/table.columntoggle.popup.js:176</code></a>
+<span class="note">`_setOptions`: 58 lines, complexity 21, nesting 5</span>            </li>
+            <li>
+              <span class="eid">E5</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/widgets/forms/select.custom.js#L568"><code>js/widgets/forms/select.custom.js:568</code></a>
+<span class="note">`_buildList`: 89 lines, complexity 18, nesting 4</span>            </li>
+            <li>
+              <span class="eid">E6</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/navigation.js#L254"><code>js/navigation.js:254</code></a>
+<span class="note">`(anonymous)`: 57 lines, complexity 24, nesting 3</span>            </li>
+            <li>
+              <span class="eid">E7</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/navigation.js#L107"><code>js/navigation.js:107</code></a>
+<span class="note">`getAjaxFormData`: 49 lines, complexity 15, nesting 5</span>            </li>
+            <li>
+              <span class="eid">E8</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/_assets/js/h2widget.js#L18"><code>demos/_assets/js/h2widget.js:18</code></a>
+<span class="note">`(anonymous)`: 35 lines, complexity 19, nesting 4</span>            </li>
+            <li>
+              <span class="eid">E9</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/support.js#L148"><code>js/support.js:148</code></a>
+<span class="note">`fixedPosition`: 22 lines, complexity 23, nesting 3</span>            </li>
+            <li>
+              <span class="eid">E10</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/tools/log-page-events.js#L55"><code>tools/log-page-events.js:55</code></a>
+<span class="note">`logEvent`: 44 lines, complexity 19, nesting 3</span>            </li>
+            <li>
+              <span class="eid">E11</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/widgets/listview.js#L31"><code>js/widgets/listview.js:31</code></a>
+<span class="note">`(anonymous)`: 46 lines, complexity 9, nesting 6</span>            </li>
+            <li>
+              <span class="eid">E12</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/widgets/forms/autogrow.js#L29"><code>js/widgets/forms/autogrow.js:29</code></a>
+<span class="note">`(anonymous)`: 59 lines, complexity 7, nesting 6</span>            </li>
+          </ul>
+        </details>
+
+        <div class="exorcism">
+          <h4>The exorcism</h4>
+          <p>Reduce function complexity and nesting depth.</p>
+          <ol>
+<li>Identify all functions with complexity scores above 15.</li><li>Decompose the 210-line anonymous function in <code>js/widgets/collapsible.js</code> into smaller, single-purpose functions.</li><li>Flatten the nesting in <code>js/widgets/forms/autogrow.js</code> by using guard clauses.</li><li>Refactor <code>_refresh</code> in <code>js/widgets/listview.js</code> to reduce its complexity of 25.</li>          </ol>
+        </div>
+      </div>
+    </article>
+    <article class="demon reveal" id="butha">
+      <div class="mask"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" role="img" aria-label="Butha Sanniya mask"><title>Butha Sanniya mask</title><path d="M50,72 C36,52 64,40 50,22 C40,38 62,52 50,72" fill="none" stroke="#d9cfb8" stroke-width="5" stroke-linecap="round" opacity="0.85"/><path d="M75,72 C61,52 89,40 75,22 C65,38 87,52 75,72" fill="none" stroke="#d9cfb8" stroke-width="5" stroke-linecap="round" opacity="0.85"/><path d="M100,72 C86,52 114,40 100,22 C90,38 112,52 100,72" fill="none" stroke="#d9cfb8" stroke-width="5" stroke-linecap="round" opacity="0.85"/><path d="M125,72 C111,52 139,40 125,22 C115,38 137,52 125,72" fill="none" stroke="#d9cfb8" stroke-width="5" stroke-linecap="round" opacity="0.85"/><path d="M150,72 C136,52 164,40 150,22 C140,38 162,52 150,72" fill="none" stroke="#d9cfb8" stroke-width="5" stroke-linecap="round" opacity="0.85"/><ellipse cx="38" cy="128" rx="13" ry="23" fill="#3b5f8a" stroke="#1d1a17" stroke-width="4"/><ellipse cx="162" cy="128" rx="13" ry="23" fill="#3b5f8a" stroke="#1d1a17" stroke-width="4"/><ellipse cx="100" cy="132" rx="62" ry="74" fill="#3b5f8a" stroke="#1d1a17" stroke-width="5"/><ellipse cx="82" cy="100" rx="22" ry="12" fill="#ffffff" opacity="0.12"/><path d="M52,98 Q72,80 94,96" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M106,96 Q128,80 148,98" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="76" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="76" cy="108" r="7.5" fill="#1d1a17"/><circle cx="74" cy="106" r="2" fill="#f2e8d5"/><circle cx="124" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="124" cy="108" r="7.5" fill="#1d1a17"/><circle cx="122" cy="106" r="2" fill="#f2e8d5"/><path d="M92,128 Q88,150 100,152 Q112,150 108,128" fill="#3b5f8a" stroke="#1d1a17" stroke-width="4"/><path d="M60,164 Q100,158 140,164 Q132,204 100,206 Q68,204 60,164 Z" fill="#5a0f0b" stroke="#1d1a17" stroke-width="4"/><rect x="72" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="83" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="94" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="105" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="116" y="163" width="10" height="9" fill="#f2e8d5"/><path d="M66,166 L74,166 L69,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M126,166 L134,166 L131,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/></svg></div>
+      <div class="body">
+        <h3>Butha Sanniya</h3>
+        <p class="illness">brings madness caused by spirits · in code: <em>dependency hell</em></p>
+        <div class="flames" aria-label="severity 2 of 3">
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="off" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <span>clear</span>
+        </div>
+        <blockquote class="monologue">Thirty-five dependencies wait in <code>package.json</code> without a lockfile to hold them. They wander freely, unpredictable and wild. You think you are safe without a single lockfile to bind them? Take your masks away.</blockquote>
+
+        <details>
+          <summary>The evidence (1)</summary>
+          <ul class="evidence">
+            <li>
+              <span class="eid">E13</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/package.json"><code>package.json</code></a>
+<span class="note">35 node dependencies and no lockfile</span>            </li>
+          </ul>
+        </details>
+
+        <div class="exorcism">
+          <h4>The exorcism</h4>
+          <p>Pin dependencies to ensure reproducible builds.</p>
+          <ol>
+<li>Run <code>npm install</code> to generate a <code>package-lock.json</code> file.</li><li>Commit the lockfile to the repository to lock dependency versions.</li>          </ol>
+        </div>
+      </div>
+    </article>
+    <article class="demon reveal" id="bihiri">
+      <div class="mask"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" role="img" aria-label="Bihiri Sanniya mask"><title>Bihiri Sanniya mask</title><path d="M28,76 Q25,63 40,37 Q55,63 52,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M48,76 Q45,58 60,32 Q75,58 72,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M68,76 Q65,53 80,27 Q95,53 92,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M88,76 Q85,48 100,22 Q115,48 112,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M108,76 Q105,53 120,27 Q135,53 132,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M128,76 Q125,58 140,32 Q155,58 152,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M148,76 Q145,63 160,37 Q175,63 172,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><ellipse cx="38" cy="128" rx="13" ry="23" fill="#e0a526" stroke="#1d1a17" stroke-width="4"/><ellipse cx="162" cy="128" rx="13" ry="23" fill="#e0a526" stroke="#1d1a17" stroke-width="4"/><line x1="23" y1="114" x2="53" y2="120" stroke="#f2e8d5" stroke-width="5"/><line x1="23" y1="124" x2="53" y2="130" stroke="#f2e8d5" stroke-width="5"/><line x1="23" y1="134" x2="53" y2="140" stroke="#f2e8d5" stroke-width="5"/><line x1="147" y1="114" x2="177" y2="120" stroke="#f2e8d5" stroke-width="5"/><line x1="147" y1="124" x2="177" y2="130" stroke="#f2e8d5" stroke-width="5"/><line x1="147" y1="134" x2="177" y2="140" stroke="#f2e8d5" stroke-width="5"/><ellipse cx="100" cy="132" rx="62" ry="74" fill="#e0a526" stroke="#1d1a17" stroke-width="5"/><ellipse cx="82" cy="100" rx="22" ry="12" fill="#ffffff" opacity="0.12"/><path d="M52,98 Q72,80 94,96" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M106,96 Q128,80 148,98" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="76" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="76" cy="116" r="7.5" fill="#1d1a17"/><circle cx="74" cy="114" r="2" fill="#f2e8d5"/><circle cx="124" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="124" cy="116" r="7.5" fill="#1d1a17"/><circle cx="122" cy="114" r="2" fill="#f2e8d5"/><path d="M92,128 Q88,150 100,152 Q112,150 108,128" fill="#e0a526" stroke="#1d1a17" stroke-width="4"/><path d="M60,164 Q100,158 140,164 Q132,204 100,206 Q68,204 60,164 Z" fill="#5a0f0b" stroke="#1d1a17" stroke-width="4"/><rect x="72" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="83" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="94" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="105" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="116" y="163" width="10" height="9" fill="#f2e8d5"/><path d="M66,166 L74,166 L69,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M126,166 L134,166 L131,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/></svg></div>
+      <div class="body">
+        <h3>Bihiri Sanniya</h3>
+        <p class="illness">brings deafness · in code: <em>swallowed errors</em></p>
+        <div class="flames" aria-label="severity 2 of 3">
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="off" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <span>clear</span>
+        </div>
+        <blockquote class="monologue">I silenced the cry in <code>js/data.js</code> at line sixty-two. When the error arrived, I simply closed my ears with an empty catch block. Now the truth is lost forever in the silence. Fine, I will go.</blockquote>
+
+        <details>
+          <summary>The evidence (1)</summary>
+          <ul class="evidence">
+            <li>
+              <span class="eid">E14</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/data.js#L62"><code>js/data.js:62</code></a>
+<code>} catch ( err ) {}</code><span class="note">empty catch</span>            </li>
+          </ul>
+        </details>
+
+        <div class="exorcism">
+          <h4>The exorcism</h4>
+          <p>Replace empty catch blocks with error logging.</p>
+          <ol>
+<li>Locate the empty catch block in <code>js/data.js</code> at line 62.</li><li>Add a logging statement to capture the error for debugging.</li>          </ol>
+          <pre class="diff"><span class="file">--- a/js/data.js</span><span class="file">+++ b/js/data.js</span><span class="hunk">@@ -60,5 +60,5 @@</span><span class="ctx"> 							rbrace.test( data ) ? window.JSON.parse( data ) :</span><span class="ctx"> 								data;</span><span class="del">-		} catch ( err ) {}</span><span class="add">+		} catch ( err ) { console.error(err); }</span><span class="ctx"> </span><span class="ctx"> 		return data;</span></pre>
+        </div>
+      </div>
+    </article>
+    <article class="demon reveal" id="deva">
+      <div class="mask"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" role="img" aria-label="Deva Sanniya mask"><title>Deva Sanniya mask</title><circle cx="46" cy="40" r="13" fill="#e0a526" stroke="#1d1a17" stroke-width="3"/><circle cx="42" cy="38" r="2.6" fill="#1d1a17"/><circle cx="50" cy="38" r="2.6" fill="#1d1a17"/><path d="M41,45 Q46,49 51,45" stroke="#1d1a17" stroke-width="2" fill="none"/><circle cx="73" cy="40" r="13" fill="#e0a526" stroke="#1d1a17" stroke-width="3"/><circle cx="69" cy="38" r="2.6" fill="#1d1a17"/><circle cx="77" cy="38" r="2.6" fill="#1d1a17"/><path d="M68,45 Q73,49 78,45" stroke="#1d1a17" stroke-width="2" fill="none"/><circle cx="100" cy="40" r="13" fill="#e0a526" stroke="#1d1a17" stroke-width="3"/><circle cx="96" cy="38" r="2.6" fill="#1d1a17"/><circle cx="104" cy="38" r="2.6" fill="#1d1a17"/><path d="M95,45 Q100,49 105,45" stroke="#1d1a17" stroke-width="2" fill="none"/><circle cx="127" cy="40" r="13" fill="#e0a526" stroke="#1d1a17" stroke-width="3"/><circle cx="123" cy="38" r="2.6" fill="#1d1a17"/><circle cx="131" cy="38" r="2.6" fill="#1d1a17"/><path d="M122,45 Q127,49 132,45" stroke="#1d1a17" stroke-width="2" fill="none"/><circle cx="154" cy="40" r="13" fill="#e0a526" stroke="#1d1a17" stroke-width="3"/><circle cx="150" cy="38" r="2.6" fill="#1d1a17"/><circle cx="158" cy="38" r="2.6" fill="#1d1a17"/><path d="M149,45 Q154,49 159,45" stroke="#1d1a17" stroke-width="2" fill="none"/><ellipse cx="38" cy="128" rx="13" ry="23" fill="#b3261e" stroke="#1d1a17" stroke-width="4"/><ellipse cx="162" cy="128" rx="13" ry="23" fill="#b3261e" stroke="#1d1a17" stroke-width="4"/><ellipse cx="100" cy="132" rx="62" ry="74" fill="#b3261e" stroke="#1d1a17" stroke-width="5"/><ellipse cx="82" cy="100" rx="22" ry="12" fill="#ffffff" opacity="0.12"/><path d="M52,98 Q72,80 94,96" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M106,96 Q128,80 148,98" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="76" cy="116" r="18" fill="#f2e8d5" stroke="#1d1a17" stroke-width="5"/><circle cx="76" cy="116" r="7.5" fill="#1d1a17"/><circle cx="74" cy="114" r="2" fill="#f2e8d5"/><circle cx="124" cy="116" r="18" fill="#f2e8d5" stroke="#1d1a17" stroke-width="5"/><circle cx="124" cy="116" r="7.5" fill="#1d1a17"/><circle cx="122" cy="114" r="2" fill="#f2e8d5"/><path d="M92,128 Q88,150 100,152 Q112,150 108,128" fill="#b3261e" stroke="#1d1a17" stroke-width="4"/><path d="M60,164 Q100,158 140,164 Q132,204 100,206 Q68,204 60,164 Z" fill="#5a0f0b" stroke="#1d1a17" stroke-width="4"/><rect x="72" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="83" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="94" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="105" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="116" y="163" width="10" height="9" fill="#f2e8d5"/><path d="M66,166 L74,166 L69,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M126,166 L134,166 L131,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><circle cx="60" cy="145" r="3" fill="#e0a526"/><circle cx="140" cy="145" r="3" fill="#e0a526"/><circle cx="66" cy="157" r="3" fill="#e0a526"/><circle cx="134" cy="157" r="3" fill="#e0a526"/><circle cx="100" cy="88" r="3" fill="#e0a526"/></svg></div>
+      <div class="body">
+        <h3>Deva Sanniya</h3>
+        <p class="illness">brings epidemics · in code: <em>copy-paste spreading</em></p>
+        <div class="flames" aria-label="severity 2 of 3">
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="off" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <span>clear</span>
+        </div>
+        <blockquote class="monologue">I have spread myself across the demos, ten percent of the entire body. From <code>demos/_search/index.php</code> to <code>demos/accordion/index.php</code>, I repeat my patterns over and over. One hundred and six times I have cloned myself. I am everywhere and nowhere.</blockquote>
+
+        <details>
+          <summary>The evidence (12)</summary>
+          <ul class="evidence">
+            <li>
+              <span class="eid">E15</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/_search/index.php#L42"><code>demos/_search/index.php:42</code></a>
+<span class="note">same 6+ lines also at demos/accordion/index.php:323, demos/body-bar-classes/index.php:101, demos/button/index.php:154 and 97 more</span>            </li>
+            <li>
+              <span class="eid">E16</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/_search/index.php#L18"><code>demos/_search/index.php:18</code></a>
+<span class="note">same 6+ lines also at demos/accordion/index.php:18, demos/backbone-requirejs/index.php:19, demos/body-bar-classes/index.php:33 and 96 more</span>            </li>
+            <li>
+              <span class="eid">E17</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/collapsible-dynamic/index.php#L9"><code>demos/collapsible-dynamic/index.php:9</code></a>
+<span class="note">same 6+ lines also at demos/controlgroup-dynamic/index.php:9, demos/external-widgets/page-d.php:10, demos/icons-grunticon/index.php:19 and 14 more</span>            </li>
+            <li>
+              <span class="eid">E18</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/old-faq-pages/controls-in-header-footer.php#L1"><code>demos/old-faq-pages/controls-in-header-footer.php:1</code></a>
+<span class="note">same 6+ lines also at demos/old-faq-pages/disabling-a-button-does-not-work.php:1, demos/old-faq-pages/how-can-i-stop-auto-enhancement-of-a-block-of-elements.php:1, demos/old-faq-pages/how-can-i-stop-auto-enhancement-of-elements.php:1 and 12 more</span>            </li>
+            <li>
+              <span class="eid">E19</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/grids-buttons/index.php#L87"><code>demos/grids-buttons/index.php:87</code></a>
+<span class="note">same 6+ lines also at demos/old-faq-pages/how-can-i-stop-auto-enhancement-of-elements.php:42, demos/selectmenu-custom/index.php:38, demos/selectmenu-custom/index.php:108 and 7 more</span>            </li>
+            <li>
+              <span class="eid">E20</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/forms-disabled/index.php#L82"><code>demos/forms-disabled/index.php:82</code></a>
+<span class="note">same 6+ lines also at demos/forms-disabled/index.php:119, demos/forms-disabled/index.php:145, demos/forms-disabled/index.php:216 and 6 more</span>            </li>
+            <li>
+              <span class="eid">E21</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/forms-gallery/index.php#L49"><code>demos/forms-gallery/index.php:49</code></a>
+<span class="note">same 6+ lines also at demos/forms-gallery/index.php:59, demos/forms-gallery/index.php:252, demos/forms-gallery/index.php:262 and 4 more</span>            </li>
+            <li>
+              <span class="eid">E22</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/icons/index.php#L252"><code>demos/icons/index.php:252</code></a>
+<span class="note">same 6+ lines also at demos/intro/index.php:73, demos/listview/index.php:69, demos/listview/index.php:81 and 4 more</span>            </li>
+            <li>
+              <span class="eid">E23</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/accordion/index.php#L41"><code>demos/accordion/index.php:41</code></a>
+<span class="note">same 6+ lines also at demos/accordion/index.php:82, demos/accordion/index.php:123, demos/accordion/index.php:163 and 3 more</span>            </li>
+            <li>
+              <span class="eid">E24</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/accordion/index.php#L54"><code>demos/accordion/index.php:54</code></a>
+<span class="note">same 6+ lines also at demos/accordion/index.php:95, demos/accordion/index.php:136, demos/accordion/index.php:176 and 3 more</span>            </li>
+            <li>
+              <span class="eid">E25</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/accordion/index.php#L67"><code>demos/accordion/index.php:67</code></a>
+<span class="note">same 6+ lines also at demos/accordion/index.php:108, demos/accordion/index.php:149, demos/accordion/index.php:189 and 3 more</span>            </li>
+            <li>
+              <span class="eid">E26</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/external-widgets/info.php#L87"><code>demos/external-widgets/info.php:87</code></a>
+<span class="note">same 6+ lines also at demos/external-widgets/page-d.php:97, demos/toolbar-fixed-persistent-optimized/index.php:53, demos/toolbar-fixed-persistent-optimized/page-b.php:81 and 3 more</span>            </li>
+          </ul>
+        </details>
+
+        <div class="exorcism">
+          <h4>The exorcism</h4>
+          <p>Centralize duplicated HTML and PHP blocks in the demos directory.</p>
+          <ol>
+<li>Identify the 106 duplicated blocks across the PHP demo files.</li><li>Extract repeated header, footer, and layout patterns into separate partial files.</li><li>Use PHP <code>include</code> statements to reference these partials in <code>demos/</code>.</li>          </ol>
+        </div>
+      </div>
+    </article>
+    <article class="demon reveal" id="gedi">
+      <div class="mask"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" role="img" aria-label="Gedi Sanniya mask"><title>Gedi Sanniya mask</title><path d="M28,76 Q25,63 40,37 Q55,63 52,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M48,76 Q45,58 60,32 Q75,58 72,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M68,76 Q65,53 80,27 Q95,53 92,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M88,76 Q85,48 100,22 Q115,48 112,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M108,76 Q105,53 120,27 Q135,53 132,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M128,76 Q125,58 140,32 Q155,58 152,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M148,76 Q145,63 160,37 Q175,63 172,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><ellipse cx="38" cy="128" rx="13" ry="23" fill="#e0a526" stroke="#1d1a17" stroke-width="4"/><ellipse cx="162" cy="128" rx="13" ry="23" fill="#e0a526" stroke="#1d1a17" stroke-width="4"/><ellipse cx="100" cy="132" rx="62" ry="74" fill="#e0a526" stroke="#1d1a17" stroke-width="5"/><ellipse cx="82" cy="100" rx="22" ry="12" fill="#ffffff" opacity="0.12"/><path d="M52,98 Q72,80 94,96" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M106,96 Q128,80 148,98" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="76" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="76" cy="116" r="7.5" fill="#1d1a17"/><circle cx="74" cy="114" r="2" fill="#f2e8d5"/><circle cx="124" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="124" cy="116" r="7.5" fill="#1d1a17"/><circle cx="122" cy="114" r="2" fill="#f2e8d5"/><path d="M92,128 Q88,150 100,152 Q112,150 108,128" fill="#e0a526" stroke="#1d1a17" stroke-width="4"/><path d="M60,164 Q100,158 140,164 Q132,204 100,206 Q68,204 60,164 Z" fill="#5a0f0b" stroke="#1d1a17" stroke-width="4"/><rect x="72" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="83" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="94" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="105" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="116" y="163" width="10" height="9" fill="#f2e8d5"/><path d="M66,166 L74,166 L69,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M126,166 L134,166 L131,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><circle cx="58" cy="150" r="5" fill="#b3261e" stroke="#1d1a17" stroke-width="1.5"/><circle cx="68" cy="160" r="3.5" fill="#b3261e" stroke="#1d1a17" stroke-width="1.5"/><circle cx="142" cy="148" r="5" fill="#b3261e" stroke="#1d1a17" stroke-width="1.5"/><circle cx="134" cy="160" r="4" fill="#b3261e" stroke="#1d1a17" stroke-width="1.5"/><circle cx="100" cy="92" r="4" fill="#b3261e" stroke="#1d1a17" stroke-width="1.5"/><circle cx="88" cy="84" r="3" fill="#b3261e" stroke="#1d1a17" stroke-width="1.5"/></svg></div>
+      <div class="body">
+        <h3>Gedi Sanniya</h3>
+        <p class="illness">brings boils and skin disease · in code: <em>style sores</em></p>
+        <div class="flames" aria-label="severity 1 of 3">
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="off" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="off" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <span>mild</span>
+        </div>
+        <blockquote class="monologue">I leave no mark, only the subtle itch of unformatted code. Your <code>.editorconfig</code> is a thin shield against my chaos. Without a linter, your style will slowly rot. Go then, but the mess remains.</blockquote>
+
+        <details>
+          <summary>The evidence (1)</summary>
+          <ul class="evidence">
+            <li>
+              <span class="eid">E27</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/.editorconfig"><code>.editorconfig</code></a>
+<span class="note">sets whitespace only; nothing checks the code itself</span>            </li>
+          </ul>
+        </details>
+
+        <div class="exorcism">
+          <h4>The exorcism</h4>
+          <p>Implement a code linter to enforce consistent style.</p>
+          <ol>
+<li>Add a linting dependency like ESLint or JSHint to <code>package.json</code>.</li><li>Create a configuration file to define coding standards.</li><li>Integrate the linting step into the existing Grunt build process.</li>          </ol>
+        </div>
+      </div>
+    </article>
+    <article class="demon reveal" id="gulma">
+      <div class="mask"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" role="img" aria-label="Gulma Sanniya mask"><title>Gulma Sanniya mask</title><path d="M28,76 Q25,63 40,37 Q55,63 52,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M48,76 Q45,58 60,32 Q75,58 72,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M68,76 Q65,53 80,27 Q95,53 92,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M88,76 Q85,48 100,22 Q115,48 112,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M108,76 Q105,53 120,27 Q135,53 132,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M128,76 Q125,58 140,32 Q155,58 152,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M148,76 Q145,63 160,37 Q175,63 172,76 Z" fill="#b3261e" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><ellipse cx="38" cy="128" rx="13" ry="23" fill="#3f7d3a" stroke="#1d1a17" stroke-width="4"/><ellipse cx="162" cy="128" rx="13" ry="23" fill="#3f7d3a" stroke="#1d1a17" stroke-width="4"/><ellipse cx="100" cy="132" rx="62" ry="74" fill="#3f7d3a" stroke="#1d1a17" stroke-width="5"/><ellipse cx="82" cy="100" rx="22" ry="12" fill="#ffffff" opacity="0.12"/><path d="M52,98 Q72,80 94,96" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M106,96 Q128,80 148,98" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="76" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="76" cy="116" r="7.5" fill="#1d1a17"/><circle cx="74" cy="114" r="2" fill="#f2e8d5"/><circle cx="124" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="124" cy="116" r="7.5" fill="#1d1a17"/><circle cx="122" cy="114" r="2" fill="#f2e8d5"/><path d="M92,128 Q88,150 100,152 Q112,150 108,128" fill="#3f7d3a" stroke="#1d1a17" stroke-width="4"/><path d="M60,164 Q100,158 140,164 Q132,204 100,206 Q68,204 60,164 Z" fill="#5a0f0b" stroke="#1d1a17" stroke-width="4"/><rect x="72" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="83" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="94" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="105" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="116" y="163" width="10" height="9" fill="#f2e8d5"/><path d="M66,166 L74,166 L69,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M126,166 L134,166 L131,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M46,140 q5,-6 10,0 t10,0 t10,0" fill="none" stroke="#e0a526" stroke-width="3.5" stroke-linecap="round"/><path d="M124,140 q5,-6 10,0 t10,0 t10,0" fill="none" stroke="#e0a526" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+      <div class="body">
+        <h3>Gulma Sanniya</h3>
+        <p class="illness">brings worms and stomach parasites · in code: <em>hidden worms</em></p>
+        <div class="flames" aria-label="severity 3 of 3">
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <span>severe</span>
+        </div>
+        <blockquote class="monologue">Seventy-four of my children crawl through your files. I hide in the <code>TODO</code> and <code>XXX</code> markers of <code>js/vmouse.js</code> and <code>js/events/navigate.js</code>. Seventy-two <code>TODO</code>s and two <code>XXX</code>s are my feast. You cannot ignore the itch forever.</blockquote>
+
+        <details>
+          <summary>The evidence (12)</summary>
+          <ul class="evidence">
+            <li>
+              <span class="eid">E28</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/vmouse.js#L541"><code>js/vmouse.js:541</code></a>
+<code>// XXX: We may want to consider removing matches from the block list</code>            </li>
+            <li>
+              <span class="eid">E29</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/widgets/forms/textinput.js#L138"><code>js/widgets/forms/textinput.js:138</code></a>
+<code>// XXX: Temporary workaround for issue 785 (Apple bug 8910589).</code>            </li>
+            <li>
+              <span class="eid">E30</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/demos/controlgroup/index.php#L411"><code>demos/controlgroup/index.php:411</code></a>
+<code>&lt;!-- TODO: This should be a separate demo --&gt;</code>            </li>
+            <li>
+              <span class="eid">E31</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/events/navigate.js#L16"><code>js/events/navigate.js:16</code></a>
+<code>// TODO break out pushstate support test so we don&#39;t depend on the whole thing</code>            </li>
+            <li>
+              <span class="eid">E32</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/events/navigate.js#L65"><code>js/events/navigate.js:65</code></a>
+<code>// TODO a lot of duplication between popstate and hashchange</code>            </li>
+            <li>
+              <span class="eid">E33</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/events/navigate.js#L124"><code>js/events/navigate.js:124</code></a>
+<code>// TODO consider allowing for the explicit addition of callbacks</code>            </li>
+            <li>
+              <span class="eid">E34</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/events/navigate.js#L130"><code>js/events/navigate.js:130</code></a>
+<code>// TODO We really only want to set this up once</code>            </li>
+            <li>
+              <span class="eid">E35</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/helpers.js#L85"><code>js/helpers.js:85</code></a>
+<code>// TODO: Remove and use $.ui.keyCode directly</code>            </li>
+            <li>
+              <span class="eid">E36</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/init.js#L140"><code>js/init.js:140</code></a>
+<code>// TODO figure out how to simplify this interaction with the initial history entry</code>            </li>
+            <li>
+              <span class="eid">E37</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/navigation.js#L232"><code>js/navigation.js:232</code></a>
+<code>// TODO teach $.mobile.hijackable to operate on raw dom elements so the</code>            </li>
+            <li>
+              <span class="eid">E38</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/navigation.js#L280"><code>js/navigation.js:280</code></a>
+<code>// TODO teach $.mobile.hijackable to operate on raw dom elements so the link wrapping</code>            </li>
+            <li>
+              <span class="eid">E39</span>
+<a href="https://github.com/jquery-archive/jquery-mobile/blob/1c3a17624608a1650124020bea7d0dadf365475f/js/navigation.js#L341"><code>js/navigation.js:341</code></a>
+<code>//TODO overlap in logic from isExternal, rel=external check should be</code>            </li>
+          </ul>
+        </details>
+
+        <div class="exorcism">
+          <h4>The exorcism</h4>
+          <p>Resolve technical debt by addressing all TODO and XXX comments.</p>
+          <ol>
+<li>Run a global search for all <code>// TODO</code> and <code>// XXX</code> comments.</li><li>Convert each comment into a tracked issue in the repository.</li><li>Prioritize and resolve the critical workarounds in <code>js/widgets/forms/textinput.js</code>.</li>          </ol>
+        </div>
+      </div>
+    </article>
+    <article class="demon reveal" id="kora">
+      <div class="mask"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" role="img" aria-label="Kora Sanniya mask"><title>Kora Sanniya mask</title><path d="M28,76 Q25,63 40,37 Q55,63 52,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M48,76 Q45,58 60,32 Q75,58 72,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M68,76 Q65,53 80,27 Q95,53 92,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M88,76 Q85,48 100,22 Q115,48 112,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M108,76 Q105,53 120,27 Q135,53 132,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M128,76 Q125,58 140,32 Q155,58 152,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><path d="M148,76 Q145,63 160,37 Q175,63 172,76 Z" fill="#3f7d3a" stroke="#1d1a17" stroke-width="3" stroke-linejoin="round"/><ellipse cx="38" cy="128" rx="13" ry="23" fill="#e2711d" stroke="#1d1a17" stroke-width="4"/><ellipse cx="162" cy="128" rx="13" ry="23" fill="#e2711d" stroke="#1d1a17" stroke-width="4"/><ellipse cx="100" cy="132" rx="62" ry="74" fill="#e2711d" stroke="#1d1a17" stroke-width="5"/><ellipse cx="82" cy="100" rx="22" ry="12" fill="#ffffff" opacity="0.12"/><path d="M52,98 Q72,80 94,96" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M106,96 Q128,80 148,98" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="76" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="76" cy="116" r="7.5" fill="#1d1a17"/><circle cx="74" cy="114" r="2" fill="#f2e8d5"/><path d="M56,115 Q76,90 96,115 Z" fill="#e2711d" stroke="#1d1a17" stroke-width="4"/><circle cx="124" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="124" cy="116" r="7.5" fill="#1d1a17"/><circle cx="122" cy="114" r="2" fill="#f2e8d5"/><path d="M104,115 Q124,90 144,115 Z" fill="#e2711d" stroke="#1d1a17" stroke-width="4"/><path d="M92,128 Q88,150 100,152 Q112,150 108,128" fill="#e2711d" stroke="#1d1a17" stroke-width="4"/><path d="M60,164 Q100,158 140,164 Q132,204 100,206 Q68,204 60,164 Z" fill="#5a0f0b" stroke="#1d1a17" stroke-width="4"/><rect x="72" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="83" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="94" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="105" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="116" y="163" width="10" height="9" fill="#f2e8d5"/><path d="M66,166 L74,166 L69,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M126,166 L134,166 L131,188 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M126,140 q10,10 4,22" fill="none" stroke="#1d1a17" stroke-width="3"/></svg></div>
+      <div class="body">
+        <h3>Kora Sanniya</h3>
+        <p class="illness">brings lameness and paralysis · in code: <em>paralysed repo</em></p>
+        <div class="flames" aria-label="severity 3 of 3">
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <svg viewBox="0 0 20 26" class="" aria-hidden="true"><path d="M10,1 Q18,12 15,19 Q12,25 10,25 Q8,25 5,19 Q2,12 10,1 Z"/></svg>
+          <span>severe</span>
+        </div>
+        <blockquote class="monologue">Sixty-one months of stillness have passed since my last breath. I lie archived and frozen, with one hundred and eighty-two issues waiting for a life that will never come. The pulse has stopped. I am already gone.</blockquote>
+
+        <details>
+          <summary>The evidence (3)</summary>
+          <ul class="evidence">
+            <li>
+              <span class="eid">E40</span>
+<span class="note">Last commit 2021-10-07, 61 months ago</span>            </li>
+            <li>
+              <span class="eid">E41</span>
+<span class="note">The repository is archived on GitHub</span>            </li>
+            <li>
+              <span class="eid">E42</span>
+<span class="note">182 open issues and pull requests are waiting</span>            </li>
+          </ul>
+        </details>
+
+        <div class="exorcism">
+          <h4>The exorcism</h4>
+          <p>Perform a clean goodbye by maintaining the archived state.</p>
+          <ol>
+<li>Ensure the README clearly directs users to the deprecation blog post.</li><li>Maintain the repository in its archived state to prevent new issues.</li><li>Point users to modern alternatives in the project status documentation.</li>          </ol>
+        </div>
+      </div>
+    </article>
+  </section>
+
+
+  <section id="kola" class="reveal">
+    <p class="kicker">Kola Sanniya</p>
+    <div class="mask"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" role="img" aria-label="Kola Sanniya mask"><title>Kola Sanniya mask</title><g><circle cx="21.1" cy="153.5" r="10" fill="#3f7d3a" stroke="#1d1a17" stroke-width="2.5"/><circle cx="17.6" cy="152.0" r="2.4" fill="#f2e8d5"/><circle cx="24.6" cy="152.0" r="2.4" fill="#f2e8d5"/><path d="M17.1,157.5 Q21.1,160.5 25.1,157.5" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="16.6" cy="133.3" r="10" fill="#e2711d" stroke="#1d1a17" stroke-width="2.5"/><circle cx="13.1" cy="131.8" r="2.4" fill="#f2e8d5"/><circle cx="20.1" cy="131.8" r="2.4" fill="#f2e8d5"/><path d="M12.6,137.3 Q16.6,140.3 20.6,137.3" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="16.4" cy="112.6" r="10" fill="#3b5f8a" stroke="#1d1a17" stroke-width="2.5"/><circle cx="12.9" cy="111.1" r="2.4" fill="#f2e8d5"/><circle cx="19.9" cy="111.1" r="2.4" fill="#f2e8d5"/><path d="M12.4,116.6 Q16.4,119.6 20.4,116.6" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="20.5" cy="92.3" r="10" fill="#e0a526" stroke="#1d1a17" stroke-width="2.5"/><circle cx="17.0" cy="90.8" r="2.4" fill="#f2e8d5"/><circle cx="24.0" cy="90.8" r="2.4" fill="#f2e8d5"/><path d="M16.5,96.3 Q20.5,99.3 24.5,96.3" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="28.6" cy="73.6" r="10" fill="#b3261e" stroke="#1d1a17" stroke-width="2.5"/><circle cx="25.1" cy="72.1" r="2.4" fill="#f2e8d5"/><circle cx="32.1" cy="72.1" r="2.4" fill="#f2e8d5"/><path d="M24.6,77.6 Q28.6,80.6 32.6,77.6" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="40.3" cy="57.3" r="10" fill="#e0a526" stroke="#1d1a17" stroke-width="2.5"/><circle cx="36.8" cy="55.8" r="2.4" fill="#f2e8d5"/><circle cx="43.8" cy="55.8" r="2.4" fill="#f2e8d5"/><path d="M36.3,61.3 Q40.3,64.3 44.3,61.3" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="55.0" cy="44.3" r="10" fill="#b3261e" stroke="#1d1a17" stroke-width="2.5"/><circle cx="51.5" cy="42.8" r="2.4" fill="#f2e8d5"/><circle cx="58.5" cy="42.8" r="2.4" fill="#f2e8d5"/><path d="M51.0,48.3 Q55.0,51.3 59.0,48.3" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="72.1" cy="35.2" r="10" fill="#d9cfb8" stroke="#1d1a17" stroke-width="2.5"/><circle cx="68.6" cy="33.7" r="2.4" fill="#f2e8d5"/><circle cx="75.6" cy="33.7" r="2.4" fill="#f2e8d5"/><path d="M68.1,39.2 Q72.1,42.2 76.1,39.2" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="90.5" cy="30.6" r="10" fill="#3f7d3a" stroke="#1d1a17" stroke-width="2.5"/><circle cx="87.0" cy="29.1" r="2.4" fill="#f2e8d5"/><circle cx="94.0" cy="29.1" r="2.4" fill="#f2e8d5"/><path d="M86.5,34.6 Q90.5,37.6 94.5,34.6" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="109.5" cy="30.6" r="10" fill="#3b5f8a" stroke="#1d1a17" stroke-width="2.5"/><circle cx="106.0" cy="29.1" r="2.4" fill="#f2e8d5"/><circle cx="113.0" cy="29.1" r="2.4" fill="#f2e8d5"/><path d="M105.5,34.6 Q109.5,37.6 113.5,34.6" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="127.9" cy="35.2" r="10" fill="#1d1a17" stroke="#1d1a17" stroke-width="2.5"/><circle cx="124.4" cy="33.7" r="2.4" fill="#f2e8d5"/><circle cx="131.4" cy="33.7" r="2.4" fill="#f2e8d5"/><path d="M123.9,39.2 Q127.9,42.2 131.9,39.2" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="145.0" cy="44.3" r="10" fill="#e2711d" stroke="#1d1a17" stroke-width="2.5"/><circle cx="141.5" cy="42.8" r="2.4" fill="#f2e8d5"/><circle cx="148.5" cy="42.8" r="2.4" fill="#f2e8d5"/><path d="M141.0,48.3 Q145.0,51.3 149.0,48.3" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="159.7" cy="57.3" r="10" fill="#d9cfb8" stroke="#1d1a17" stroke-width="2.5"/><circle cx="156.2" cy="55.8" r="2.4" fill="#f2e8d5"/><circle cx="163.2" cy="55.8" r="2.4" fill="#f2e8d5"/><path d="M155.7,61.3 Q159.7,64.3 163.7,61.3" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="171.4" cy="73.6" r="10" fill="#3f7d3a" stroke="#1d1a17" stroke-width="2.5"/><circle cx="167.9" cy="72.1" r="2.4" fill="#f2e8d5"/><circle cx="174.9" cy="72.1" r="2.4" fill="#f2e8d5"/><path d="M167.4,77.6 Q171.4,80.6 175.4,77.6" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="179.5" cy="92.3" r="10" fill="#e0a526" stroke="#1d1a17" stroke-width="2.5"/><circle cx="176.0" cy="90.8" r="2.4" fill="#f2e8d5"/><circle cx="183.0" cy="90.8" r="2.4" fill="#f2e8d5"/><path d="M175.5,96.3 Q179.5,99.3 183.5,96.3" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="183.6" cy="112.6" r="10" fill="#8a9a2b" stroke="#1d1a17" stroke-width="2.5"/><circle cx="180.1" cy="111.1" r="2.4" fill="#f2e8d5"/><circle cx="187.1" cy="111.1" r="2.4" fill="#f2e8d5"/><path d="M179.6,116.6 Q183.6,119.6 187.6,116.6" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="183.4" cy="133.3" r="10" fill="#3b5f8a" stroke="#1d1a17" stroke-width="2.5"/><circle cx="179.9" cy="131.8" r="2.4" fill="#f2e8d5"/><circle cx="186.9" cy="131.8" r="2.4" fill="#f2e8d5"/><path d="M179.4,137.3 Q183.4,140.3 187.4,137.3" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g><circle cx="178.9" cy="153.5" r="10" fill="#e2711d" stroke="#1d1a17" stroke-width="2.5"/><circle cx="175.4" cy="152.0" r="2.4" fill="#f2e8d5"/><circle cx="182.4" cy="152.0" r="2.4" fill="#f2e8d5"/><path d="M174.9,157.5 Q178.9,160.5 182.9,157.5" stroke="#1d1a17" stroke-width="1.6" fill="none"/></g><g transform="translate(100 128) scale(0.8) translate(-100 -128)"><ellipse cx="38" cy="128" rx="13" ry="23" fill="#3f7d3a" stroke="#1d1a17" stroke-width="4"/><ellipse cx="162" cy="128" rx="13" ry="23" fill="#3f7d3a" stroke="#1d1a17" stroke-width="4"/><ellipse cx="100" cy="132" rx="62" ry="74" fill="#3f7d3a" stroke="#1d1a17" stroke-width="5"/><ellipse cx="82" cy="100" rx="22" ry="12" fill="#ffffff" opacity="0.12"/><path d="M52,98 Q72,80 94,96" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M106,96 Q128,80 148,98" stroke="#1d1a17" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="76" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="76" cy="116" r="7.5" fill="#1d1a17"/><circle cx="74" cy="114" r="2" fill="#f2e8d5"/><circle cx="124" cy="116" r="18" fill="#f2e8d5" stroke="#b3261e" stroke-width="5"/><circle cx="124" cy="116" r="7.5" fill="#1d1a17"/><circle cx="122" cy="114" r="2" fill="#f2e8d5"/><path d="M92,128 Q88,150 100,152 Q112,150 108,128" fill="#3f7d3a" stroke="#1d1a17" stroke-width="4"/><path d="M60,164 Q100,158 140,164 Q132,204 100,206 Q68,204 60,164 Z" fill="#5a0f0b" stroke="#1d1a17" stroke-width="4"/><rect x="72" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="83" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="94" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="105" y="163" width="10" height="9" fill="#f2e8d5"/><rect x="116" y="163" width="10" height="9" fill="#f2e8d5"/><path d="M64,190 Q58,166 70,150 L76,170 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/><path d="M136,190 Q142,166 130,150 L124,170 Z" fill="#f2e8d5" stroke="#1d1a17" stroke-width="2"/></g></svg></div>
+    <h2>The leader of the demons</h2>
+    <p class="root">The repository has reached its natural end of life.</p>
+    <p class="explanation">The accumulation of technical debt, complexity, and unaddressed issues is a symptom of a project that is no longer being actively maintained, leading to its eventual archival.</p>
+    <div class="verse">
+      <p class="si" lang="si">පැරණි දේ අතහැර අලුත් මග සොයන්න.</p>
+      <p class="tr">Pärani dē atahära alut maga soyanna.</p>
+      <p class="en">Leave the old behind and seek a new path.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <h2>About the ritual</h2>
+  <p>
+    Sanni Yakuma is a traditional healing ritual of southern and western Sri Lanka, performed from
+    dusk to dawn. It opens with the Ata Paliya, eight dances that bless the patient. Then, in the
+    Daha Ata Sanniya, masked dancers portray the eighteen Sanni demons, each believed to cause a
+    particular illness. The demons appear one by one, first frightening, then humiliated as comic
+    figures, and are persuaded to leave the patient. Maha Kola Sanniya, the chief disease-demon,
+    comes last; old masks show him surrounded by his eighteen attendant demons. The ritual is still
+    performed today, mostly along the south coast, though more often as a cultural performance than
+    as an exorcism.
+  </p>
+  <p>
+    This page borrows the ritual's shape, not its sacred purpose. The humour is aimed at the code
+    sicknesses, as the ritual itself mocks the demons, never at the tradition or the people who keep it.
+    Read more: <a href="https://en.wikipedia.org/wiki/Sanni_Yakuma">Sanni Yakuma on Wikipedia</a>, and
+    the <a href="https://collection.sciencemuseumgroup.org.uk/objects/co124339/polychrome-mask-representing-maha-kola-sanniya-chief-disease-demon">Maha Kola Sanniya mask</a>
+    in the Science Museum Group collection.
+  </p>
+
+  <h2>How this exorcism was performed</h2>
+  <ul>
+    <li>Eighteen plain detectors read the code (no AI) and collected evidence: files, lines, numbers.</li>
+    <li>gemma-4-26b-a4b-it, an open Gemma model, read that evidence and wrote the diagnosis, the monologues and the cures.</li>
+    <li>Any demon or evidence Gemma named that the detectors had not found was thrown out. Code fixes are shown only if their lines really exist in the code.</li>
+    <li>The masks are original drawings made in code for this project, not copies of real masks.</li>
+  </ul>
+  <p>Made with <a href="https://github.com/dhananjaya-hbc/sanni-yakuma">sanni-yakuma</a>, performed 29 October 2026.</p>
+</footer>
+
+<script>
+(function () {
+  var items = document.querySelectorAll(".reveal");
+  if (!("IntersectionObserver" in window)) {
+    items.forEach(function (el) { el.classList.add("seen", "lit"); });
+    return;
+  }
+  var lampIndex = 0;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var el = e.target;
+      el.classList.add("seen");
+      if (el.classList.contains("lamp")) {
+        // Light the lamps one after another, as in the opening dances.
+        setTimeout(function () { el.classList.add("lit"); }, 250 + 300 * (lampIndex++ % 8));
+      }
+      io.unobserve(el);
+    });
+  }, { threshold: 0.15 });
+  items.forEach(function (el) { io.observe(el); });
+})();
+</script>
+</body>
+</html>
