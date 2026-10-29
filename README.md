@@ -112,7 +112,9 @@ project, not copies of real masks.
 
 ## Credits
 
-- About the ritual: [Sanni Yakuma on Wikipedia](https://en.wikipedia.org/wiki/Sanni_Yakuma).
+- About the ritual: [Sanni Yakuma on Wikipedia](https://en.wikipedia.org/wiki/Sanni_Yakuma), and the
+  Science Museum Group's [Maha Kola Sanniya mask](https://collection.sciencemuseumgroup.org.uk/objects/co124339/polychrome-mask-representing-maha-kola-sanniya-chief-disease-demon)
+  ("chief disease-demon … with 18 attendant demons").
 - Model: [Gemma](https://ai.google.dev/gemma) by Google, via Google AI Studio.
 - Libraries: [pydantic](https://github.com/pydantic/pydantic), [Jinja2](https://github.com/pallets/jinja),
   [lizard](https://github.com/terryyin/lizard), [google-genai](https://github.com/googleapis/python-genai),
