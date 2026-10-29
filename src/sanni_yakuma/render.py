@@ -82,10 +82,40 @@ def build_context(ritual: Ritual) -> dict:
     }
 
 
-def render(ritual: Ritual) -> str:
+def _env() -> Environment:
     env = Environment(loader=FileSystemLoader(TEMPLATES), autoescape=True, trim_blocks=True, lstrip_blocks=True)
     env.filters["ticks"] = ticks
-    return env.get_template("ritual.html.j2").render(**build_context(ritual))
+    return env
+
+
+def render(ritual: Ritual) -> str:
+    return _env().get_template("ritual.html.j2").render(**build_context(ritual))
+
+
+def page_name(ritual: Ritual) -> str:
+    return ritual.repo.replace("/", "-") + ".html"
+
+
+def render_gallery(rituals: list[Ritual]) -> str:
+    cards = [{
+        "r": r,
+        "href": page_name(r),
+        "masks": [Markup(mask_svg(p.demon)) for p in r.possessions],
+        "date": datetime.fromisoformat(r.performed_at).strftime("%d %B %Y"),
+    } for r in sorted(rituals, key=lambda r: len(r.possessions), reverse=True)]
+    all_masks = [Markup(mask_svg(d)) for d in BY_NAME]
+    return _env().get_template("gallery.html.j2").render(cards=cards, all_masks=all_masks)
+
+
+def write_gallery(rituals: list[Ritual], folder: Path) -> Path:
+    """The Hall of Masks: an index page plus every ritual page, ready for GitHub Pages."""
+    folder.mkdir(parents=True, exist_ok=True)
+    for ritual in rituals:
+        write_page(ritual, folder / page_name(ritual))
+    (folder / ".nojekyll").write_text("", encoding="utf-8")
+    index = folder / "index.html"
+    index.write_text(render_gallery(rituals), encoding="utf-8")
+    return index
 
 
 def write_page(ritual: Ritual, path: Path) -> Path:
