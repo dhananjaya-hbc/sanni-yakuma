@@ -126,6 +126,11 @@ def test_slesma_node_modules_and_env(make_repo):
     assert omen.metrics["junk_dirs"] == 1 and omen.metrics["binaries"] == 1
 
 
+def test_slesma_ignores_test_fixtures(make_repo):
+    omen = slesma.detect(make_repo({".gitignore": "", "test/assets/package.tar.gz": b"\0\1", "a.py": ""}))
+    assert not omen.found
+
+
 def test_slesma_no_gitignore(make_repo):
     assert slesma.detect(make_repo({"a.py": ""})).severity_hint == 1
 
