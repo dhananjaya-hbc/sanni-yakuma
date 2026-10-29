@@ -9,36 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --night: #0d0907; --wood: #1c130e; --ember: #e2711d; --gold: #e0a526; --red: #b3261e;
-  --leaf: #3f7d3a; --cream: #efe3cc; --dim: #a8987f; --line: #3a2a1f;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --sinhala: "Noto Sans Sinhala", "Sinhala Sangam MN", "Iskoola Pota", sans-serif;
-}
-* { box-sizing: border-box; }
-html { background: var(--night); }
-body {
-  margin: 0; color: var(--cream); font: 18px/1.65 var(--serif);
-  background: radial-gradient(ellipse at 50% 0%, #2a1a10 0%, var(--night) 55%) fixed;
-}
-/* Torch light from both sides of the stage. */
-body::before, body::after {
-  content: ""; position: fixed; top: -10vh; width: 60vw; height: min(80vh, 800px); pointer-events: none; z-index: 0;
-  background: radial-gradient(circle, rgba(226,113,29,.20) 0%, rgba(226,113,29,0) 65%);
-  animation: flicker 3.7s infinite;
-}
-body::before { left: -25vw; }
-body::after { right: -25vw; animation-duration: 4.3s; animation-delay: -1.2s; }
-@keyframes flicker {
-  0%, 100% { opacity: .85; } 12% { opacity: 1; } 20% { opacity: .7; } 34% { opacity: .95; }
-  52% { opacity: .78; } 68% { opacity: 1; } 81% { opacity: .82; }
-}
-main, header, footer { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 22px; }
-a { color: var(--gold); }
-code { font: .86em var(--mono); background: #2a1d15; padding: .1em .35em; border-radius: 4px; color: #f6d79a; }
-h1, h2, h3, h4 { font-weight: normal; line-height: 1.2; }
-.kicker { font-variant: small-caps; letter-spacing: .14em; color: var(--ember); font-size: .95rem; margin: 0; }
+{% include "_base.css" %}
 
 /* Opening */
 header.stage { text-align: center; padding-top: clamp(48px, 12vh, 140px); padding-bottom: clamp(24px, 6vh, 70px); }
