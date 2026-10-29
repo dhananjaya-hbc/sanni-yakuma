@@ -14,17 +14,30 @@ SICK = {
 
 
 def answer(possessions, blessings=None):
-    return json.dumps({
-        "blessings": blessings or [{"title": "Small and focused", "detail": "One file, one job."}],
-        "possessions": possessions,
-        "kola_sanniya": {"root_cause": "Haste", "explanation": "Built fast.", "verse_sinhala": "සුබ වේවා",
-                         "verse_transliteration": "suba vēvā", "verse_english": "May it be well"},
-    }, ensure_ascii=False)
+    return json.dumps(
+        {
+            "blessings": blessings or [{"title": "Small and focused", "detail": "One file, one job."}],
+            "possessions": possessions,
+            "kola_sanniya": {
+                "root_cause": "Haste",
+                "explanation": "Built fast.",
+                "verse_sinhala": "සුබ වේවා",
+                "verse_transliteration": "suba vēvā",
+                "verse_english": "May it be well",
+            },
+        },
+        ensure_ascii=False,
+    )
 
 
 def possession(demon, ids, severity=2, patch=None):
-    return {"demon": demon, "severity": severity, "evidence_ids": ids, "monologue": "I am here.",
-            "exorcism": {"summary": "Fix it.", "steps": ["Do the thing."], "patch": patch}}
+    return {
+        "demon": demon,
+        "severity": severity,
+        "evidence_ids": ids,
+        "monologue": "I am here.",
+        "exorcism": {"summary": "Fix it.", "steps": ["Do the thing."], "patch": patch},
+    }
 
 
 # Indentation is off by two on purpose: the patch step must forgive it.
