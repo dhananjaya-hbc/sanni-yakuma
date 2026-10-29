@@ -87,15 +87,26 @@ def detect(repo: Repo) -> Omen:
     if worst and (worst[0][0].cyclomatic_complexity >= 40 or worst[0][0].nloc >= 200):
         sev = max(sev, 2)
     evidence = [
-        Evidence(path=path, line=fn.start_line,
-                 note=f"`{fn.name}`: {fn.nloc} lines, complexity {fn.cyclomatic_complexity}, nesting {depth}")
+        Evidence(
+            path=path,
+            line=fn.start_line,
+            note=f"`{fn.name}`: {fn.nloc} lines, complexity {fn.cyclomatic_complexity}, nesting {depth}",
+        )
         for fn, path, depth in worst[:MAX_EVIDENCE]
     ]
     return Omen(
-        demon="Abutha", sickness="self-made complexity", found=sev > 0, severity_hint=sev,
-        summary=f"{len(possessed)} of {analysed} functions are long, tangled or deeply nested." if possessed else f"All {analysed} functions are reasonably sane.",
-        metrics={"functions": analysed, "possessed": len(possessed),
-                 "max_complexity": max((fn.cyclomatic_complexity for fn, _, _ in possessed), default=0),
-                 "max_nloc": max((fn.nloc for fn, _, _ in possessed), default=0)},
+        demon="Abutha",
+        sickness="self-made complexity",
+        found=sev > 0,
+        severity_hint=sev,
+        summary=f"{len(possessed)} of {analysed} functions are long, tangled or deeply nested."
+        if possessed
+        else f"All {analysed} functions are reasonably sane.",
+        metrics={
+            "functions": analysed,
+            "possessed": len(possessed),
+            "max_complexity": max((fn.cyclomatic_complexity for fn, _, _ in possessed), default=0),
+            "max_nloc": max((fn.nloc for fn, _, _ in possessed), default=0),
+        },
         evidence=evidence if sev else [],
     )
