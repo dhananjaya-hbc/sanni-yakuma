@@ -17,3 +17,9 @@ def test_comment_cannot_ping_or_close_issues():
     md = comment(ritual(possessions=[], blessings=[]).model_copy(update={
         "kola_sanniya": ritual().kola_sanniya.model_copy(update={"root_cause": "Ask @octocat, fixes #12"})}))
     assert "@octocat" not in md and "#12" not in md
+
+
+def test_multiline_verse_stays_quoted():
+    verse = ritual().kola_sanniya.model_copy(update={"verse_sinhala": "පළමු පේළිය\nදෙවන පේළිය"})
+    md = comment(ritual(kola_sanniya=verse))
+    assert "> පළමු පේළිය  \n> දෙවන පේළිය  " in md
