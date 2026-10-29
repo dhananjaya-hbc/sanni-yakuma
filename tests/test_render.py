@@ -94,3 +94,24 @@ def test_gallery_links_every_ritual(tmp_path):
     assert 'href="demo-app.html"' in html and 'href="demo-well.html"' in html
     assert (tmp_path / "demo-app.html").exists() and (tmp_path / ".nojekyll").exists()
     assert html.index("demo/app") < html.index("demo/well")  # most possessed first
+
+
+def test_masks_are_alive():
+    svg = mask_svg("Bihiri")
+    assert 'class="pupil"' in svg and 'class="crown"' in svg
+    assert 'class="spiral"' in mask_svg("Pissu")  # mad eyes turn instead of following
+    assert 'class="ring"' in kola_svg()
+
+
+def test_page_has_stage_and_banishing():
+    page = render(ritual())
+    assert 'class="torch"' in page and 'class="hero-mask sway"' in page
+    assert '<button class="banish" type="button">Send Bihiri away</button>' in page
+    assert 'data-count="1"' in page and "1 demon remains" in page
+    assert 'data-gone="Bihiri has left the patient."' in page
+    assert "getScreenCTM" in page  # the eyes follow the viewer
+
+
+def test_gallery_masks_follow_the_viewer(tmp_path):
+    html = write_gallery([ritual()], tmp_path).read_text()
+    assert "getScreenCTM" in html and html.count('class="pupil"') >= 18
