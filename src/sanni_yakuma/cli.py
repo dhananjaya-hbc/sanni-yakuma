@@ -101,7 +101,9 @@ def cmd_exorcise(args: argparse.Namespace) -> int:
     k = ritual.kola_sanniya
     console.print(f"\n[bold]Kola Sanniya[/]: {k.root_cause}", highlight=False)
     console.print(k.explanation, highlight=False)
-    console.print(f"\n{k.verse_sinhala}\n[dim]{k.verse_transliteration}[/]\n[italic]{k.verse_english}[/]", highlight=False)
+    console.print(
+        f"\n{k.verse_sinhala}\n[dim]{k.verse_transliteration}[/]\n[italic]{k.verse_english}[/]", highlight=False
+    )
     page = write_page(ritual, out.with_suffix(".html"))
     console.print(f"\nSaved {out} and {page}")
     if args.markdown:
