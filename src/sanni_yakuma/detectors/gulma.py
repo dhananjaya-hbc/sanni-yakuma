@@ -18,9 +18,13 @@ def detect(repo: Repo) -> Omen:
     hits.sort(key=lambda h: WORM_RE.search(h.snippet).group(1) in {"TODO"})
     sev = severity(len(hits), mild=5, clear=20, severe=60)
     return Omen(
-        demon="Gulma", sickness="hidden worms", found=sev > 0, severity_hint=sev,
-        summary=f"{len(hits)} worm marker(s): " + ", ".join(f"{n} {k}" for k, n in kinds.most_common()) if hits else "No TODO/FIXME/HACK markers.",
-        metrics={"total": len(hits), **{k.lower(): n for k, n in kinds.items()},
-                 "files": len({h.path for h in hits})},
+        demon="Gulma",
+        sickness="hidden worms",
+        found=sev > 0,
+        severity_hint=sev,
+        summary=f"{len(hits)} worm marker(s): " + ", ".join(f"{n} {k}" for k, n in kinds.most_common())
+        if hits
+        else "No TODO/FIXME/HACK markers.",
+        metrics={"total": len(hits), **{k.lower(): n for k, n in kinds.items()}, "files": len({h.path for h in hits})},
         evidence=hits[:MAX_EVIDENCE],
     )
