@@ -52,7 +52,9 @@ def summon(target: str, depth: int = 200) -> Iterator[Repo]:
     try:
         subprocess.run(
             ["git", "clone", "--quiet", "--depth", str(depth), target, str(tmp / "repo")],
-            check=True, capture_output=True, text=True,
+            check=True,
+            capture_output=True,
+            text=True,
         )
         gh = parse_github(target)
         meta = fetch_github_meta(*gh) if gh else {}
