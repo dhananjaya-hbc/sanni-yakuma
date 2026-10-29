@@ -14,6 +14,12 @@ def quiet(text: str) -> str:
     return text.replace("@", "@​").replace("#", "#​")
 
 
+def blockquote(text: str, italic: bool = False) -> str:
+    """Quote every line; two trailing spaces keep the verse's line breaks."""
+    lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
+    return "\n".join(f"> _{line}_  " if italic else f"> {line}  " for line in lines)
+
+
 def comment(ritual: Ritual) -> str:
     index = index_evidence(ritual.omens)
     found = len(ritual.possessions)
@@ -61,9 +67,11 @@ def comment(ritual: Ritual) -> str:
         "### Kola Sanniya, the root cause",
         quiet(k.root_cause),
         "",
-        f"> {quiet(k.verse_sinhala)}  ",
-        f"> _{quiet(k.verse_transliteration)}_  ",
-        f"> {quiet(k.verse_english)}",
+        blockquote(quiet(k.verse_sinhala)),
+        ">",
+        blockquote(quiet(k.verse_transliteration), italic=True),
+        ">",
+        blockquote(quiet(k.verse_english)),
         "",
         "<sub>Every demon here rests on evidence the detectors found in the code; anything Gemma claimed "
         "beyond that was thrown out. The full ritual page is in this run's `sanni-yakuma` artifact. "
